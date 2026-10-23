@@ -1,0 +1,2977 @@
+
+    
+        :root {
+            --bg-color: #f2f2f2;
+            --text-color: #000;
+            --border-color: #000;
+            --panel-bg: #fff;
+            --bubble-bg: #fff;
+            --bg-pattern: radial-gradient(circle, #c9c9c9 2px, transparent 2.5px);
+            --bg-size: 14px 14px;
+            --btn-radius: 50%; /* UI按钮圆角默认值 */
+        }
+        [data-theme="dark"] {
+    --bg-color: #111111;
+    --text-color: #a8a8a8; /* SEND键的底色和文字，压暗防刺眼 */
+    --border-color: #333333; /* 所有的边框和阴影，压深变暗 */
+    --panel-bg: #161616; /* 输入框面板和我的气泡，压深 */
+    --bubble-bg: #1f1f1f; /* 对方气泡的底色，压深 */
+    --bg-pattern: radial-gradient(circle, #181818 2px, transparent 2.5px);
+}
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body {
+            background-color: var(--bg-color); color: var(--text-color);
+            background-image: var(--bg-pattern); background-size: var(--bg-size);
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            transition: background-color 0.3s ease; font-size: 14px; 
+        }
+
+        /* 👇--- 新增这段：强制所有输入框、按钮、下拉框跟随全局字体等比例缩放 ---👇 */
+        input, button, select, textarea {
+            font-size: 1em;
+            font-family: inherit;
+        }
+        /* 👆--------------------------------------------------------------👆 */
+
+        /* === 自动跟随系统深色模式，彻底根除开屏白光闪烁 === */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-color: #111111; --text-color: #a8a8a8; --border-color: #333333;
+        --panel-bg: #161616; --bubble-bg: #1f1f1f;
+        --bg-pattern: radial-gradient(circle, #181818 2px, transparent 2.5px);
+    }
+}
+
+/* === 极简舒适开屏动画 === */
+#splashScreen {
+    position: fixed; inset: 0; background: var(--bg-color); z-index: 99999;
+    display: flex; justify-content: center; align-items: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+/* 高级感排版容器 */
+.premium-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+
+/* 光环动画组 */
+.premium-loader {
+    position: relative; width: 45px; height: 45px;
+    display: flex; justify-content: center; align-items: center;
+}
+.core-dot {
+    width: 6px; height: 6px; background-color: var(--text-color);
+    border-radius: 50%; box-shadow: 0 0 10px var(--text-color);
+    animation: corePulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+.outer-ring {
+    position: absolute; inset: 0; border: 1.5px solid var(--text-color);
+    border-radius: 50%; opacity: 0; 
+    animation: ringExpand 2s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+.delay-ring { animation-delay: 1s; } /* 第二层波纹延迟扩散 */
+
+/* 极简底部启动文本 */
+.premium-text {
+    font-size: 9px; font-weight: 700; letter-spacing: 6px; margin-right: -6px;
+    color: var(--text-color); opacity: 0;
+    animation: textFadeIn 1s ease-out forwards 0.3s;
+}
+
+/* 顺滑的关键帧曲线 */
+@keyframes corePulse { 
+    0% { transform: scale(0.5); opacity: 0.3; } 
+    100% { transform: scale(1.2); opacity: 1; } 
+}
+@keyframes ringExpand { 
+    0% { transform: scale(0.2); opacity: 0.8; border-width: 2px; } 
+    100% { transform: scale(2); opacity: 0; border-width: 0px; } 
+}
+@keyframes textFadeIn { 
+    0% { opacity: 0; transform: translateY(8px); letter-spacing: 2px; } 
+    100% { opacity: 0.5; transform: translateY(0); letter-spacing: 6px; } 
+}
+
+        /* 顶部导航 */
+.header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 12px; background: transparent; z-index: 10; gap: 8px;
+}
+.header-center-box {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--panel-bg); border: 3px solid var(--border-color);
+    padding: 5px 15px; box-shadow: 4px 4px 0 var(--border-color);
+    transform: rotate(-1deg); border-radius: 4px;
+    flex: 1; flex-shrink: 1; min-width: 0; overflow: hidden;
+}
+.header-title { font-weight: 900; font-size: 1.25em; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.header-sub { font-size: 0.7em; font-weight: bold; font-style: italic; letter-spacing: 1px; border-top: 2px solid var(--border-color); margin-top: 2px; padding-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+.header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.top-btn {
+    background: var(--panel-bg); border: 3px solid var(--border-color);
+    width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+    cursor: pointer; color: var(--text-color); box-shadow: 2px 2px 0 var(--border-color); 
+    font-weight: 900; border-radius: var(--btn-radius); transition: transform 0.1s ease; flex-shrink: 0;
+}
+.top-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+.top-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* 聊天区域 */
+        .chat-container {
+            flex: 1; overflow-y: auto; padding: 5px 12px 10px 12px;
+            display: flex; flex-direction: column; gap: 16px; 
+        }
+        .load-more { text-align: center; padding: 8px; font-weight: 900; cursor: pointer; text-decoration: underline; font-style: italic; font-size: 0.9em; text-transform: uppercase;}
+
+        /* 跨天大时间分隔 */
+        .visual-date-divider { margin: 10px 0; display: flex; flex-direction: column; align-items: center; user-select: none; }
+        .v-time-box {
+            background: var(--text-color); color: var(--bg-color);
+            padding: 6px 15px; font-weight: 900; font-style: italic;
+            display: flex; align-items: baseline; gap: 8px; transform: skewX(-5deg);
+        }
+        .v-time { font-size: 1.8em; line-height: 1; }
+        .v-date { font-size: 0.8em; letter-spacing: 1px; opacity: 0.9;}
+
+        /* 消息布局 */
+        .message { display: flex; gap: 10px; max-width: 95%; align-items: flex-start;}
+        .message.yume { align-self: flex-start; flex-direction: row; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+
+        /* 头像容器 */
+        .avatar-container { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+        .avatar {
+            width: 100%; height: 100%;
+            border: 3px solid var(--border-color); background-color: var(--panel-bg); color: var(--text-color);
+            display: flex; justify-content: center; align-items: center;
+            font-weight: 900; font-size: 1.2em; box-shadow: 3px 3px 0 var(--border-color);
+            background-repeat: no-repeat; background-position: center; background-size: cover;
+            transition: border-radius 0.3s ease;
+        }
+        .avatar-frame {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            pointer-events: none; background-repeat: no-repeat; z-index: 2;
+        }
+
+        /* 气泡与外部时间戳的并排布局 */
+        .msg-content { 
+            display: flex; flex-direction: row; gap: 8px; max-width: 88%; 
+            align-items: flex-end; /* 让时间戳和气泡底部完美对齐 */
+        }
+        .message.user .msg-content { 
+            flex-direction: row-reverse; /* 用户的气泡在右，时间戳在左外侧 */
+        }
+
+        /* 气泡 */
+        .bubble {
+            padding: 12px 16px; border: 3px solid var(--border-color);
+            font-weight: 900; font-size: 1.05em; line-height: 1.5; word-break: break-all;
+            /* 👇新增下面这几行，屏蔽系统长按选中文字和默认菜单👇 */
+            -webkit-user-select: none; 
+            user-select: none; 
+            -webkit-touch-callout: none;
+        }
+        .yume .bubble { 
+            background: var(--bubble-bg); color: var(--text-color); box-shadow: 4px 4px 0 var(--border-color); 
+            border-radius: 0 16px 16px 16px; 
+        }
+        .user .bubble { 
+            background: var(--panel-bg); color: var(--text-color); box-shadow: -4px 4px 0 var(--border-color); 
+            border-radius: 16px 0 16px 16px; 
+        }
+        
+        .chat-image { max-width: 150px; border: 3px solid var(--border-color); background: var(--panel-bg); padding: 4px; box-shadow: 4px 4px 0 var(--border-color); border-radius: 8px;}
+        .user .chat-image { box-shadow: -4px 4px 0 var(--border-color); }
+
+        .timestamp-container { 
+            display: flex; align-items: center; gap: 1px; font-size: 0.75em; 
+            font-weight: 900; font-style: italic; color: var(--text-color); 
+            opacity: 0.6; flex-shrink: 0; padding-bottom: 2px; 
+        }
+        /* 强制覆盖旧的设置项，统一使用外置排版 */
+        .timestamp-container.pos-bottom-left, .timestamp-container.pos-bottom-right,
+        .timestamp-container.pos-top-left, .timestamp-container.pos-top-right {
+            order: 0 !important; margin: 0 !important; justify-content: center !important;
+        }
+        .timestamp-container.hidden { display: none !important; }
+        .read-status { color: inherit; font-size: inherit; opacity: 0.8; display: flex; align-items: center; }
+        
+        /* 二次元/漫画风特色：双层描边贴纸气泡 */
+.typing-indicator { 
+    display: none; align-items: center; gap: 8px; 
+    padding: 6px 14px 6px 6px; 
+    background: var(--panel-bg); 
+    border: 3px solid var(--border-color); 
+    /* 左下角尖角，其他大圆角，形成漫画专属对话框形状 */
+    border-radius: 24px 24px 24px 4px; 
+    /* 核心特色：利用多重阴影做出“白边+黑底”的贴纸层叠效果 */
+    box-shadow: 
+        0 0 0 3px var(--bg-color), 
+        0 0 0 6px var(--border-color),
+        3px 4px 0 6px var(--border-color);
+    width: fit-content; max-width: 85%; 
+    margin: 10px 12px 18px 15px; 
+    font-weight: 900; font-style: italic; font-size: 0.85em;
+    animation: popInBubble 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.typing-avatar {
+    width: 26px; height: 26px; border: 2px solid var(--border-color); flex-shrink: 0;
+    background-size: cover; background-position: center; background-color: var(--bg-color);
+    display: flex; justify-content: center; align-items: center; font-size: 12px; color: var(--text-color);
+    border-radius: 50%; /* 恢复正圆头像 */
+}
+.typing-name { word-break: break-word; color: var(--text-color); opacity: 0.8; margin-right: 2px; }
+
+/* 恢复跳动圆点，并且让圆点跳动时带有立体的微投影 */
+.typing-dots { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+.typing-dots span { 
+    width: 5px; height: 5px; background: var(--text-color); border-radius: 50%; 
+    animation: typingDot 1.4s infinite ease-in-out both; 
+}
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingDot { 
+    0%, 80%, 100% { transform: translateY(0) scale(0.8); opacity: 0.5; box-shadow: none; } 
+    40% { transform: translateY(-3px) scale(1.1); opacity: 1; box-shadow: 1px 1px 0 var(--border-color); } 
+}
+@keyframes popInBubble {
+    0% { opacity: 0; transform: scale(0.8) translateY(10px); transform-origin: bottom left; }
+    100% { opacity: 1; transform: scale(1) translateY(0); transform-origin: bottom left; }
+}
+
+/* 消息长按菜单 */
+        .msg-context-menu {
+            display: none; position: fixed; background: var(--text-color); color: var(--bg-color);
+            border-radius: 8px; padding: 5px; z-index: 9999; box-shadow: 4px 4px 0 var(--border-color);
+            flex-direction: row; gap: 5px; transform: translateX(-50%); font-weight: 900; font-size: 0.9em;
+        }
+        .msg-context-menu::after {
+            content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            border-width: 6px; border-style: solid; border-color: var(--text-color) transparent transparent transparent;
+        }
+        .msg-menu-item { padding: 8px 12px; cursor: pointer; white-space: nowrap; border-radius: 4px; }
+        .msg-menu-item:active { background: var(--bg-color); color: var(--text-color); }
+
+        /* 多选模式样式 */
+        .msg-checkbox {
+            display: none; appearance: none; -webkit-appearance: none; width: 24px; height: 24px;
+            border: 3px solid var(--border-color); border-radius: 6px; background: var(--bg-color);
+            margin-right: 12px; align-self: center; flex-shrink: 0; position: relative;
+        }
+        .msg-checkbox:checked { background: var(--text-color); }
+        .msg-checkbox:checked::after {
+            content: '✔'; position: absolute; color: var(--bg-color); font-weight: 900; font-size: 14px;
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+        }
+        .multi-select-mode .msg-checkbox { display: block; }
+        .multi-select-mode .message { pointer-events: none; } /* 屏蔽气泡点击，防误触 */
+        .multi-select-mode .msg-checkbox { pointer-events: auto; cursor: pointer; }
+
+        /* 多选底部操作栏 */
+        .multi-select-bar {
+            display: none; justify-content: space-around; align-items: center; padding: 15px;
+            background: var(--panel-bg); border-top: 4px solid var(--border-color);
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 -6px 0 var(--border-color);
+        }
+        .multi-select-bar.active { display: flex; }
+        
+        /* 底部输入框 */
+        .icon-btn { 
+            background: var(--panel-bg); border: 3px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; color: var(--text-color); font-weight: 900;
+        }
+        
+        .tool-icon-btn {
+            background: var(--panel-bg); border: 3px solid var(--border-color);
+            width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; color: var(--text-color); border-radius: var(--btn-radius);
+            box-shadow: 2px 2px 0 var(--border-color); transition: transform 0.1s;
+        }
+        .tool-icon-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+        .tool-icon-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* 连发模式激活时的按钮特效 (呼吸灯) */
+        #chatContainer ~ .input-wrapper .tool-icon-btn.active-batch { 
+    background: var(--text-color) !important; 
+    color: var(--bg-color) !important; 
+    border-color: var(--text-color) !important;
+    animation: batchPulse 1.5s infinite !important; 
+}
+        @keyframes batchPulse { 0% { box-shadow: 0 0 0 0 var(--border-color); } 70% { box-shadow: 0 0 0 4px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+        
+        /* 连发模式下的气泡特效（虚线框+微透明，表示暂存未送达） */
+        .message.batch-queued .bubble { border-style: dashed !important; opacity: 0.8; }
+        .message.batch-queued .chat-image { border-style: dashed !important; opacity: 0.8; }
+
+        .input-wrapper { position: relative; padding: 15px 12px 25px 12px; background: transparent; display: flex; flex-direction: column; align-items: center;}
+        .input-top-tag {
+            background: var(--text-color); color: var(--bg-color);
+            padding: 4px 15px; font-weight: 900; font-style: italic; font-size: 0.85em; 
+            border-radius: 8px 8px 0 0; margin-bottom: -2px; z-index: 2; border: 3px solid var(--border-color); border-bottom: none;
+        }
+        .input-area {
+            width: 100%; background: var(--panel-bg); display: flex; align-items: center; gap: 8px;
+            padding: 8px; border: 3px solid var(--border-color); box-shadow: 0 6px 0 var(--border-color); border-radius: 12px; z-index: 1;
+        }
+        .tool-btns { display: flex; gap: 8px; padding-left: 4px;}
+        .input-box { flex: 1; display: flex; align-items: center; position: relative; border-left: 3px solid var(--border-color); padding-left: 10px;}
+        .main-input {
+            width: 100%; padding: 6px; border: none; background: transparent;
+            color: var(--text-color); font-size: 1.05em; font-weight: 900; outline: none;
+            /* 👇只需加上这两行限制高度和换行，防止打字太多把屏幕挤爆 */
+            word-break: break-word; 
+            max-height: 120px; overflow-y: auto; 
+        }
+        .send-btn {
+            background: var(--text-color); border: 3px solid var(--border-color); padding: 10px 18px; border-radius: 8px;
+            font-weight: 900; font-style: italic; font-size: 1.1em; cursor: pointer; color: var(--bg-color);
+        }
+        .send-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* 模态框与设置项 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-content {
+            width: 95%; max-width: 420px; padding: 0; background: var(--panel-bg);
+            border: 4px solid var(--border-color); box-shadow: 8px 8px 0 var(--border-color);
+            display: flex; flex-direction: column; max-height: 85vh; border-radius: 8px; overflow: hidden;
+        }
+        
+        .tabs { display: flex; border-bottom: 4px solid var(--border-color); background: var(--bg-color); overflow-x: auto; flex-shrink: 0;}
+        .tab-btn {
+            flex: 1; min-width: 70px; padding: 12px 5px; text-align: center; font-weight: 900; border: none; cursor: pointer;
+            background: transparent; color: var(--text-color); border-right: 3px solid var(--border-color); font-size: 1.05em;
+        }
+        .tab-btn:last-child { border-right: none; }
+        .tab-btn.active { background: var(--text-color); color: var(--bg-color); }
+        .tab-content { padding: 15px; overflow-y: auto; display: none; flex: 1; min-height: 0; }
+        .tab-content.active { display: block; }
+
+        .sticky-preview {
+            position: sticky; top: -15px; background: var(--panel-bg); z-index: 10;
+            padding: 15px; margin: -15px -15px 15px -15px; border-bottom: 4px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .num-adjust { display: flex; gap: 8px; margin-bottom: 12px; }
+        .num-adjust button { 
+            width: 40px; background: var(--panel-bg); border: 3px solid var(--border-color); 
+            color: var(--text-color); font-weight: 900; font-size: 1.2em; cursor: pointer; border-radius: 4px; transition: 0.1s;
+        }
+        .num-adjust button:active { background: var(--text-color); color: var(--bg-color); }
+        .num-adjust input[type="number"] { 
+            flex: 1; text-align: center; padding: 8px; border: 3px solid var(--border-color); 
+            border-radius: 4px; background: var(--bg-color); color: var(--text-color); font-weight: 900; font-size: 1.05em; 
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: 900; margin-bottom: 4px; font-size: 0.9em;}
+        .form-group input[type="text"], .form-group input[type="password"], .form-group input[type="number"], .form-group textarea, .form-group select { 
+            width: 100%; padding: 8px; border: 3px solid var(--border-color); border-radius: 4px;
+            background: var(--bg-color); color: var(--text-color); font-weight:900; outline: none;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        /* --- 进度条 (拉条) 全局高级美化 --- */
+.form-group input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%; height: 6px;
+    background: #e0e0e0;
+    border-radius: 4px; outline: none; margin: 12px 0;
+}
+[data-theme="dark"] .form-group input[type="range"] { background: #444; }
+
+.form-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--text-color); cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    border: 3px solid var(--bg-color);
+    transition: transform 0.1s;
+}
+.form-group input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); }
+        
+        /* 切换开关样式 */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .setting-row label { margin-bottom: 0; font-weight: 900; font-size: 0.9em; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-color); border: 3px solid var(--border-color); transition: .2s; border-radius: 26px; box-shadow: 2px 2px 0 var(--border-color); }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: var(--border-color); transition: .2s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--text-color); }
+        input:checked + .slider:before { transform: translateX(20px); background-color: var(--bg-color); }
+        
+        .setting-divider {
+            text-align: center; font-weight: 900; font-style: italic; 
+            border-bottom: 3px dashed var(--border-color); line-height: 0.1em; margin: 25px 0 20px 0;
+        }
+        .setting-divider span { background: var(--panel-bg); padding: 0 10px; font-size: 0.85em; opacity: 0.8;}
+
+        .avatar-preview-container {
+            background: var(--bg-color); background-image: var(--bg-pattern); background-size: var(--bg-size);
+            border: 3px solid var(--border-color); padding: 15px; display: flex; flex-direction: column; gap: 15px; border-radius: 4px;
+        }
+
+        .action-btn { width: 100%; padding: 15px; cursor: pointer; background: var(--text-color); color: var(--bg-color); font-weight: 900; border:none; font-size: 1.2em; text-transform: uppercase; flex-shrink: 0;}
+        .action-btn:active { opacity: 0.8; }
+        .outline-btn { width: 100%; padding: 10px; margin-top:8px; cursor: pointer; background: var(--panel-bg); color: var(--text-color); font-weight: 900; border: 3px solid var(--border-color); font-size: 1.1em; box-shadow: 3px 3px 0 var(--border-color); border-radius: 4px; transition: transform 0.1s, box-shadow 0.1s;}
+        .outline-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+        .danger-btn { background: #ff4444; color: #fff; }
+
+        /* 字卡库专属样式重构 */
+        .card-input-row { display: flex; flex-direction: column; padding: 15px; border-bottom: 4px solid var(--border-color);}
+        .card-input-row .row-group { display: flex; gap: 10px; align-items: stretch;}
+        .card-input-row select, .card-input-row textarea {
+            flex: 1; min-width: 0; padding: 10px; border: 3px solid var(--border-color); 
+            border-radius: 6px; background: var(--bg-color); color: var(--text-color); 
+            font-weight: 900; font-size: 0.95em; outline: none;
+        }
+        .card-input-row select {
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 6px center; background-size: 16px;
+            padding: 10px 35px 10px 10px;
+        }
+        [data-theme="dark"] .card-input-row select, [data-theme="dark"] #filterCategory {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        }
+        .card-input-row textarea { resize: none; }
+        
+        .cards-list { padding: 15px; padding-bottom: 50px; }
+        .card-item { display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); border: 3px solid var(--border-color); padding: 12px; margin-bottom: 12px; border-radius: 6px; box-shadow: 3px 3px 0 var(--border-color);}
+        .card-item-text { font-weight: 900; font-size: 0.95em; flex: 1; margin-right: 10px; line-height: 1.4;}
+        .card-category-tag { font-size: 0.75em; background: var(--text-color); color: var(--bg-color); padding: 3px 6px; margin-right: 6px; display: inline-block; font-style: italic; border-radius: 4px; vertical-align: middle;}
+        
+        .card-checkbox {
+            appearance: none; -webkit-appearance: none;
+            width: 20px; height: 20px; border: 3px solid var(--border-color);
+            background: var(--bg-color); border-radius: 4px; cursor: pointer;
+            display: inline-flex; justify-content: center; align-items: center; flex-shrink: 0;
+            transition: 0.1s;
+        }
+        .card-checkbox:checked { background: var(--text-color); }
+        .card-checkbox:checked::after {
+            content: '✔'; display: block; color: var(--bg-color); font-weight: 900; font-size: 14px;
+        }
+        
+        .group-checkbox-lbl {
+            display: inline-flex; align-items: center; gap: 8px; font-weight: 900; cursor: pointer; margin-right: 15px; margin-bottom: 8px;
+        }
+        .batch-actions span { cursor: pointer; text-decoration: underline; transition: opacity 0.2s; user-select: none; }
+        .batch-actions span:active { opacity: 0.5; }
+
+        #filterCategory {
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 6px center; background-size: 16px;
+            padding-right: 35px; border: 3px solid var(--border-color); border-radius: 6px;
+            background-color: var(--bg-color); color: var(--text-color); font-weight: 900; outline: none;
+        }
+        
+        /* 悬浮表情包面板样式 */
+        .sticker-panel { pointer-events: auto !important; display: none; position: absolute; bottom: 100%; left: 12px; right: 12px; margin-bottom: 0px; background: var(--panel-bg); border: 3px solid var(--border-color); border-radius: 12px 12px 0 0; box-shadow: 0 -4px 0 var(--border-color); height: 55vh; z-index: 100; flex-direction: column; overflow: hidden; }
+        .sticker-grid { padding: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; flex: 1; align-content: start; }
+        /* 修改：用 padding-bottom: 100% 强行撑开绝对的正方形，解决手机内核兼容导致的挤压问题 */
+.sticker-item { position: relative; border: 3px solid var(--border-color); border-radius: 6px; height: 0; padding-bottom: 100%; background: var(--bg-color); cursor: pointer; overflow: hidden; box-shadow: 2px 2px 0 var(--border-color); transition: transform 0.1s; }
+.sticker-item img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+
+/* 新增：表情包多选模式专属样式 */
+.sticker-item .sticker-checkbox { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; z-index: 10; display: none; accent-color: var(--text-color); }
+.sticker-multi-mode .sticker-item .sticker-checkbox { display: block; }
+.sticker-multi-mode .sticker-del-btn { display: none !important; } /* 多选模式下隐藏右上角的单个删除红叉 */
+.sticker-multi-mode .sticker-item img { pointer-events: none; } /* 多选模式下点击图片变成打勾，而不是发送 */
+        .sticker-item img { width: 100%; height: 100%; object-fit: contain; }
+        .sticker-del-btn { position: absolute; top: 0; right: 0; background: #ff4444; color: #fff; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 12px; border-bottom-left-radius: 6px; border-left: 2px solid var(--border-color); border-bottom: 2px solid var(--border-color); cursor: pointer; }
+
+        /* 悬浮球 */
+        .floating-ball {
+            position: fixed; right: 15px; top: 15%; width: 44px; height: 44px;
+            background: var(--text-color); color: var(--bg-color);
+            border: 3px solid var(--border-color); border-radius: 50%;
+            display: none; justify-content: center; align-items: center;
+            z-index: 90; box-shadow: 3px 3px 0 var(--border-color); cursor: pointer;
+            opacity: 0.7; user-select: none; touch-action: none; /* 防止拖拽时浏览器滚动 */
+        }
+        /* 拖拽松手后的回弹动画类 */
+        .floating-ball.snap-anim { transition: left 0.3s ease-out, top 0.3s ease-out, transform 0.2s, box-shadow 0.2s; }
+        .floating-ball:active { transform: scale(0.95); opacity: 0.9; }
+        .floating-ball svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* 悬浮面板 */
+        .app-panel {
+            position: fixed; width: 240px;
+            background: var(--panel-bg); border: 4px solid var(--border-color);
+            border-radius: 12px; box-shadow: 6px 6px 0 var(--border-color);
+            z-index: 91; display: none; flex-direction: column; overflow: hidden;
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        
+        .app-panel-header {
+            background: var(--text-color); color: var(--bg-color); font-weight: 900;
+            font-style: italic; padding: 6px 10px; font-size: 0.85em; text-align: center; letter-spacing: 1px;
+        }
+        .app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
+        .app-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+        .app-item:active .app-icon { transform: scale(0.9); box-shadow: 0 0 0; }
+        .app-icon {
+            width: 44px; height: 44px; background: var(--bg-color); border: 3px solid var(--border-color);
+            border-radius: 10px; display: flex; justify-content: center; align-items: center;
+            box-shadow: 3px 3px 0 var(--border-color); transition: 0.1s;
+        }
+        /* 面板内的 SVG 样式 */
+        .app-icon svg { width: 22px; height: 22px; stroke: var(--text-color); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .app-item span { font-size: 0.75em; font-weight: 900; color: var(--text-color); white-space: nowrap; }
+        
+        /* 电话系统专属样式 */
+        .phone-modal {
+            display: none; position: fixed; inset: 0; background: var(--bg-color);
+            background-image: var(--bg-pattern); background-size: var(--bg-size);
+            z-index: 999999; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .phone-avatar-container {
+            width: 140px; height: 140px; border-radius: var(--btn-radius, 50%);
+            border: 4px solid var(--border-color); background-color: var(--panel-bg);
+            background-size: cover; background-position: center; display: flex;
+            align-items: center; justify-content: center; font-size: 3em; font-weight: 900;
+            box-shadow: 6px 6px 0 var(--border-color); margin-bottom: 30px;
+        }
+        .phone-pulse { animation: phonePulseAnim 1.5s infinite alternate; }
+        @keyframes phonePulseAnim {
+            0% { box-shadow: 0 0 0 0 var(--text-color); transform: scale(1); }
+            100% { box-shadow: 0 0 0 15px transparent; transform: scale(1.05); }
+        }
+        .phone-name { font-size: 2.2em; font-weight: 900; margin-bottom: 10px; }
+        .phone-status { font-size: 1.1em; font-weight: 900; opacity: 0.8; margin-bottom: 50px; letter-spacing: 2px; }
+        .phone-actions { display: flex; gap: 40px; }
+        .phone-btn {
+            width: 65px; height: 65px; border-radius: 50%; border: 4px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 4px 4px 0 var(--border-color); font-weight: 900; background: var(--panel-bg);
+            color: var(--text-color); transition: 0.1s;
+        }
+        .phone-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+        .phone-btn.hangup { background: #ff4444; color: #fff; border-color: var(--border-color); }
+        .phone-btn svg { width: 30px; height: 30px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* 悬浮小窗 (通话缩小态) - 华丽重构版 */
+        .minimized-phone {
+            display: none; position: fixed; top: 75px; right: 15px; 
+            background: var(--panel-bg); color: var(--text-color); 
+            border: 3px solid var(--border-color); border-radius: 12px;
+            padding: 5px; z-index: 999998; 
+            box-shadow: 4px 4px 0 var(--border-color); 
+            align-items: center; gap: 10px; cursor: pointer;
+            animation: floatBob 2.5s infinite ease-in-out;
+            user-select: none;
+        }
+        /* 内部加一个装饰性虚线框增加复杂感 */
+        .minimized-phone::before {
+            content: ''; position: absolute; inset: 2px; 
+            border: 2px dashed var(--border-color); opacity: 0.25; border-radius: 8px; pointer-events: none;
+        }
+        @keyframes floatBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        
+        .mini-phone-icon {
+            background: var(--text-color); color: var(--bg-color);
+            width: 36px; height: 36px; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; z-index: 1; border: 2px solid var(--border-color);
+            animation: miniPhonePulse 1.5s infinite alternate;
+        }
+        @keyframes miniPhonePulse { 0% { box-shadow: 0 0 0 0 var(--border-color); } 100% { box-shadow: 0 0 0 4px transparent; } }
+        .mini-phone-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+        
+        .mini-phone-info { display: flex; flex-direction: column; justify-content: center; padding-right: 12px; position: relative; z-index: 1; }
+        .mini-phone-tag {
+            font-size: 0.7em; font-weight: 900; font-style: italic; letter-spacing: 1px; 
+            display: flex; align-items: center; gap: 5px; border-bottom: 2px solid var(--border-color); padding-bottom: 2px; margin-bottom: 2px;
+        }
+        .mini-phone-dot { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; border: 2px solid var(--border-color); animation: blinker 1s infinite; }
+        .mini-phone-time { font-size: 1.15em; font-weight: 900; font-family: monospace; letter-spacing: 1px; }
+        
+        /* 聊天界面的系统提示字样 (挂断/通话时长) */
+        .system-msg-box { display: flex; justify-content: center; margin: 15px 0; user-select: none; width: 100%; }
+        .system-msg-content { background: var(--text-color); color: var(--bg-color); padding: 4px 15px; border-radius: 4px; font-weight: 900; font-size: 0.8em; font-style: italic; letter-spacing: 1px; }
+        
+/* 引用消息展示区（气泡内部） */
+.quote-box {
+    font-size: 0.8em;
+    background: var(--bg-color); /* 使用带点阵的底层背景色，增加漫画感 */
+    border: 2px dashed var(--border-color); /* 改为全包围的虚线框 */
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: var(--text-color);
+    opacity: 0.9;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+/* 给被引用的名字前面加个小箭头，更直观 */
+.quote-name::before { content: "↳ "; opacity: 0.7; font-weight: normal; }
+.quote-name { font-weight: 900; font-size: 0.9em; opacity: 0.9; }
+.quote-text { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-all; opacity: 0.8; }
+.quote-img { max-height: 40px; max-width: 40px; border-radius: 4px; border: 2px solid var(--border-color); }
+
+/* 输入框上方的引用提示区 */
+.input-quote-preview {
+    display: none;
+    background: var(--panel-bg);
+    border-top: 3px solid var(--border-color);
+    border-left: 3px solid var(--border-color);
+    border-right: 3px solid var(--border-color);
+    border-radius: 12px 12px 0 0;
+    padding: 8px 12px;
+    margin-bottom: -3px;
+    z-index: 1;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 900;
+    font-size: 0.85em;
+    color: var(--text-color);
+    width: 100%;
+}
+.input-quote-preview .close-btn { color: #ff4444; cursor: pointer; font-size: 1.2em; padding: 0 5px; }
+
+/* ================= iMessage 苹果短信主题 ================= */
+body.theme-imessage {
+    --bg-color: #ffffff; --panel-bg: #ffffff; --bubble-bg: #e5e5ea;
+    --border-color: transparent; --bg-pattern: none;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+[data-theme="dark"] body.theme-imessage { --bg-color: #000000; --panel-bg: #000000; --bubble-bg: #262628; }
+body.theme-imessage * { box-shadow: none !important; font-style: normal !important; }
+
+/* 顶栏排版 - 修复跑到中间的错位 */
+body.theme-imessage .header {
+    position: relative !important;
+    background: var(--bg-color) !important; border-bottom: none !important;
+    padding: 10px 15px !important; height: 90px !important; align-items: flex-start !important;
+}
+
+/* 返回键：去掉数字13 */
+body.theme-imessage #themeToggleBtn { background: transparent !important; border: none !important; width: auto !important; color: #0b84ff !important; padding: 0 !important; margin-top: 10px !important; z-index: 10;}
+body.theme-imessage #themeToggleBtn svg { display: none !important; }
+body.theme-imessage #themeToggleBtn::before { content: '‹'; font-size: 34px; font-weight: 300; line-height: 0.8;}
+
+/* 右侧菜单键：改成摄像机，附带下拉折叠 */
+body.theme-imessage .header-actions { margin-top: 10px !important; position: relative !important; z-index: 99; }
+body.theme-imessage .wechat-more-btn { display: flex !important; color: #0b84ff !important; background: transparent !important; border: none !important; padding:0 !important;}
+body.theme-imessage .wechat-more-btn svg { display: none !important; }
+body.theme-imessage .wechat-more-btn::after { content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="%230b84ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="3" ry="3"></rect></svg>');}
+body.theme-imessage .header-actions-group { display: none !important; position: absolute !important; top: 40px !important; right: 0 !important; width: 140px !important; background: #f2f2f6 !important; border-radius: 12px !important; flex-direction: column !important; gap: 0 !important; padding: 5px 0 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; z-index: 99999 !important; }
+[data-theme="dark"] body.theme-imessage .header-actions-group { background: #1c1c1e !important; box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important; }
+body.theme-imessage .header-actions-group.wechat-menu-open { display: flex !important; }
+body.theme-imessage .header-actions-group .top-btn { width: 100% !important; height: auto !important; background: transparent !important; border: none !important; border-radius: 0 !important; padding: 12px 20px !important; color: var(--text-color) !important; display: flex !important; justify-content: flex-start !important; align-items: center !important; gap: 12px !important; box-shadow:none !important;}
+body.theme-imessage .header-actions-group .top-btn:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
+[data-theme="dark"] body.theme-imessage .header-actions-group .top-btn:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+body.theme-imessage .header-actions-group .top-btn svg { width: 18px !important; height: 18px !important; }
+body.theme-imessage .header-actions-group .top-btn:nth-child(1)::after { content: '群聊'; font-size: 15px; }
+body.theme-imessage .header-actions-group .top-btn:nth-child(2)::after { content: '电话'; font-size: 15px; }
+body.theme-imessage .header-actions-group .top-btn:nth-child(3)::after { content: '字卡'; font-size: 15px; }
+body.theme-imessage .header-actions-group .top-btn:nth-child(4)::after { content: '设置'; font-size: 15px; }
+
+/* 聊天气泡样式与完美圆滑小尾巴（修复竖排问题） */
+body.theme-imessage .avatar-container { display: none !important; }
+body.theme-imessage .message { max-width: 80% !important; margin-bottom: 2px !important; }
+body.theme-imessage .msg-content { max-width: 100% !important; } 
+body.theme-imessage .bubble { 
+    border: none !important; padding: 8px 14px !important; 
+    font-size: 1.05em !important; line-height: 1.4 !important;
+    border-radius: 20px !important; position: relative; font-weight: 400 !important;
+    max-width: 100% !important; word-break: break-all !important; width: fit-content !important;
+}
+
+/* 左侧 TA 的尾巴 */
+body.theme-imessage .yume { align-self: flex-start !important; margin-left: 10px !important; }
+body.theme-imessage .yume .bubble { background: var(--bubble-bg) !important; color: var(--text-color) !important; }
+body.theme-imessage .yume .bubble::before {
+    content: ''; position: absolute; bottom: 0; left: -8px; width: 20px; height: 20px;
+    background: transparent; border-bottom-right-radius: 15px;
+    box-shadow: 10px 0 0 0 var(--bubble-bg); z-index: -1;
+}
+body.theme-imessage .yume .bubble::after { display: none !important; }
+
+/* 右侧 用户的尾巴 */
+body.theme-imessage .user { align-self: flex-end !important; margin-right: 10px !important;}
+body.theme-imessage .user .bubble { background: #0b84ff !important; color: #fff !important; }
+body.theme-imessage .user .bubble::before {
+    content: ''; position: absolute; bottom: 0; right: -8px; width: 20px; height: 20px;
+    background: transparent; border-bottom-left-radius: 15px;
+    box-shadow: -10px 0 0 0 #0b84ff; z-index: -1;
+}
+body.theme-imessage .user .bubble::after { display: none !important; }
+
+/* 时间与已读 */
+body.theme-imessage .timestamp-container { display: none !important; }
+body.theme-imessage .read-status { font-size: 11px !important; color: #8e8e93 !important; position: absolute; bottom: -16px; right: 0; white-space: nowrap; font-weight: bold !important;}
+body.theme-imessage .read-status svg { display: none !important; }
+body.theme-imessage .read-status::after { content: '已送达'; }
+
+/* 底栏修改 */
+body.theme-imessage .input-wrapper { background: rgba(255,255,255,0.85) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: none !important; padding: 10px 15px 25px 15px !important; }
+[data-theme="dark"] body.theme-imessage .input-wrapper { background: rgba(0,0,0,0.85) !important; }
+body.theme-imessage .input-top-tag { display: none !important; }
+body.theme-imessage .input-area { display: flex !important; gap: 12px !important; border: none !important; background: transparent !important; padding: 0 !important; width: 100% !important; align-items: center !important;}
+body.theme-imessage .tool-btns { display: flex !important; gap: 8px !important; }
+body.theme-imessage .tool-icon-btn { border: none !important; background: transparent !important; width: 28px !important; height: 28px !important; border-radius: 50% !important; color: #8e8e93 !important; box-shadow:none !important;}
+body.theme-imessage .input-box { flex: 1 !important; border: 1px solid #c8c8cc !important; border-radius: 20px !important; padding: 4px 12px !important; background: #fff !important; }
+[data-theme="dark"] body.theme-imessage .input-box { border-color: #444 !important; background: #1c1c1e !important; }
+body.theme-imessage .main-input { border: none !important; background: transparent !important; font-weight: normal !important; padding: 3px 0 !important; line-height: 1.4 !important; }
+body.theme-imessage .main-input::placeholder { color: #c7c7cc !important; font-weight: 400 !important; }
+
+/* 发送箭头 */
+body.theme-imessage .send-btn { background: #0b84ff !important; color: #fff !important; border: none !important; border-radius: 50% !important; width: 28px !important; height: 28px !important; padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important; font-size: 0 !important; min-width:0 !important; margin: 0 !important; }
+body.theme-imessage .send-btn::after { 
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="18" x2="12" y2="5"></line><polyline points="6 11 12 5 18 11"></polyline></svg>'); 
+    width: 18px; 
+    height: 18px; 
+    display: block; 
+    margin-top: 1px;
+    margin-left: 1px;
+}
+
+/* 设置菜单圆角 */
+body.theme-imessage .modal-content { border: none !important; border-radius: 12px !important; background: #f2f2f6 !important; }
+[data-theme="dark"] body.theme-imessage .modal-content { background: #1c1c1e !important; }
+body.theme-imessage .tabs { border-bottom: none !important; background: transparent !important; }
+body.theme-imessage .tab-btn { border: none !important; color: #8e8e93 !important; font-weight: 500 !important; }
+body.theme-imessage .tab-btn.active { background: transparent !important; color: #0b84ff !important; border-bottom: 2px solid #0b84ff !important; }
+body.theme-imessage .form-group input, body.theme-imessage .form-group select, body.theme-imessage .form-group textarea { border: none !important; border-radius: 8px !important; background: #ffffff !important; font-weight: normal !important; }
+[data-theme="dark"] body.theme-imessage .form-group input, [data-theme="dark"] body.theme-imessage .form-group select, [data-theme="dark"] body.theme-imessage .form-group textarea { background: #2c2c2e !important; }
+body.theme-imessage .setting-row { background: #fff !important; border-radius: 8px !important; padding: 12px 15px !important; margin-bottom: 10px !important; }
+[data-theme="dark"] body.theme-imessage .setting-row { background: #2c2c2e !important; }
+body.theme-imessage .slider { border: none !important; background-color: #e5e5ea !important; }
+body.theme-imessage input:checked + .slider { background-color: #34c759 !important; }
+body.theme-imessage input:checked + .slider:before { transform: translateX(20px) !important; border: none !important; }
+body.theme-imessage .slider:before { border: none !important; left: 3px !important; bottom: 3px !important; width: 20px !important; height: 20px !important; background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;}
+body.theme-imessage .action-btn { background: #0b84ff !important; color: #fff !important; border: none !important; font-weight: 500 !important; border-radius: 8px !important;}
+body.theme-imessage .outline-btn { background: #fff !important; border: none !important; color: #0b84ff !important; font-weight: 500 !important; border-radius: 8px !important;}
+[data-theme="dark"] body.theme-imessage .outline-btn { background: #2c2c2e !important; }
+
+/* ================= WeChat 微信 1:1 终极重构 ================= */
+body.theme-wechat {
+    --bg-color: #ededed;
+    --panel-bg: #f5f5f5;
+    --bubble-bg: #ffffff;
+    --border-color: transparent;
+    --bg-pattern: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif !important;
+}
+[data-theme="dark"] body.theme-wechat { --bg-color: #111111; --panel-bg: #1f1f1f; --bubble-bg: #2c2c2c; }
+
+body.theme-wechat * { box-shadow: none !important; font-style: normal !important; }
+
+/* --- 1. 顶栏极致 1:1 还原 --- */
+body.theme-wechat .header {
+    position: relative !important; /* 🌟 修复名字掉到屏幕中间的问题 */
+    background: var(--panel-bg) !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    padding: 0 15px !important;
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+[data-theme="dark"] body.theme-wechat .header { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+
+/* 左侧：纯净返回箭头 (充当日夜切换) */
+body.theme-wechat #themeToggleBtn { width: 30px !important; height: 30px !important; background: transparent !important; border: none !important; margin: 0 !important; z-index: 10; display: flex !important; align-items: center !important;}
+body.theme-wechat #themeToggleBtn svg { display: none !important; }
+body.theme-wechat #themeToggleBtn::after { content: none !important; } /* 干掉文字 */
+body.theme-wechat #themeToggleBtn::before {
+    content: ''; display: block; width: 12px; height: 12px;
+    border-top: 2.5px solid var(--text-color); border-left: 2.5px solid var(--text-color);
+    transform: rotate(-45deg); margin-left: 0;
+}
+
+/* 右侧：显示“···”省略号 */
+body.theme-wechat .header-actions { position: relative !important; z-index: 99; }
+body.theme-wechat .wechat-more-btn { 
+    display: flex !important; background: transparent !important; 
+    border: none !important; padding: 0 !important; color: var(--text-color) !important;
+}
+
+/* 核心黑科技：把原本的一排功能键，变成黑色悬浮下拉菜单 */
+body.theme-wechat .header-actions-group {
+    display: none !important; /* 默认隐藏 */
+    position: absolute !important; top: 45px !important; right: 0 !important;
+    width: 140px !important; background: #4c4c4c !important; border-radius: 8px !important;
+    flex-direction: column !important; gap: 0 !important; padding: 5px 0 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; z-index: 99999 !important;
+}
+body.theme-wechat .header-actions-group.wechat-menu-open { display: flex !important; }
+
+/* 给黑框加上微信那种向上的小三角 */
+body.theme-wechat .header-actions-group::before {
+    content: ''; position: absolute; top: -6px; right: 12px;
+    border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 8px solid #4c4c4c;
+}
+
+/* 修改下拉菜单里那 4 个按钮的样子 */
+body.theme-wechat .header-actions-group .top-btn {
+    width: 100% !important; height: auto !important; background: transparent !important;
+    border: none !important; border-radius: 0 !important; padding: 12px 20px !important;
+    color: #fff !important; display: flex !important; justify-content: flex-start !important; align-items: center !important; gap: 12px !important;
+}
+body.theme-wechat .header-actions-group .top-btn svg { width: 18px !important; height: 18px !important; }
+body.theme-wechat .header-actions-group .top-btn:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+
+body.theme-wechat .header-actions-group .top-btn:nth-child(1)::after { content: '群聊'; font-size: 15px; font-weight: normal; }
+body.theme-wechat .header-actions-group .top-btn:nth-child(2)::after { content: '电话'; font-size: 15px; font-weight: normal; }
+body.theme-wechat .header-actions-group .top-btn:nth-child(3)::after { content: '字卡'; font-size: 15px; font-weight: normal; }
+body.theme-wechat .header-actions-group .top-btn:nth-child(4)::after { content: '设置'; font-size: 15px; font-weight: normal; }
+
+/* --- 2. 底栏微信化防换行 --- */
+body.theme-wechat .input-wrapper { background: var(--panel-bg) !important; border-top: 1px solid rgba(0,0,0,0.05) !important; padding: 8px 12px 25px 12px !important; }
+[data-theme="dark"] body.theme-wechat .input-wrapper { border-top: 1px solid rgba(255,255,255,0.05) !important; }
+body.theme-wechat .input-top-tag { display: none !important; }
+
+body.theme-wechat .input-area {
+    display: flex !important; align-items: flex-end !important; flex-wrap: nowrap !important;
+    background: transparent !important; border: none !important; padding: 0 !important; gap: 8px !important; width: 100% !important;
+}
+body.theme-wechat .tool-btns, body.theme-wechat .input-box { display: contents !important; }
+body.theme-wechat .tool-icon-btn { border: none !important; background: transparent !important; width: 28px !important; height: 28px !important; margin-bottom: 6px !important; flex-shrink: 0 !important; }
+body.theme-wechat #batchModeBtn { order: 1 !important; }
+body.theme-wechat button[title="发送表情"] { order: 3 !important; }
+body.theme-wechat button[title="发送图片"] { order: 4 !important; }
+
+body.theme-wechat .main-input { 
+    order: 2 !important; flex: 1 !important; min-width: 0 !important;
+    background: #fff !important; border-radius: 4px !important; padding: 10px !important; font-weight: normal !important; border: none !important; margin: 0 !important; 
+    font-size: 1em !important; line-height: 1.4 !important;
+}
+[data-theme="dark"] body.theme-wechat .main-input { background: #2c2c2c !important; color: #fff !important; }
+
+body.theme-wechat .send-btn { 
+    order: 5 !important; flex-shrink: 0 !important; min-width: 54px !important;
+    background: #07c160 !important; color: #fff !important; border: none !important; font-weight: 500 !important; border-radius: 4px !important; padding: 0 !important; height: 32px !important; margin-bottom: 4px !important; font-size: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important;
+}
+body.theme-wechat .send-btn::after { content: '发送'; font-size: 14px !important; }
+[data-theme="dark"] body.theme-wechat .send-btn { background: #2bba00 !important; }
+
+body.theme-wechat #batchModeBtn svg, body.theme-wechat button[title="发送表情"] svg, body.theme-wechat button[title="发送图片"] svg { display: none !important; }
+body.theme-wechat #batchModeBtn::after { content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>'); width: 28px; height: 28px; display: block; opacity: 0.9; }
+body.theme-wechat button[title="发送表情"]::after { content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>'); width: 28px; height: 28px; display: block; opacity: 0.9; }
+body.theme-wechat button[title="发送图片"]::after { content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>'); width: 28px; height: 28px; display: block; opacity: 0.9; }
+[data-theme="dark"] body.theme-wechat .tool-icon-btn::after { filter: invert(1); opacity: 0.7; }
+
+/* --- 3. 聊天气泡微信化 --- */
+body.theme-wechat .message { max-width: 100% !important; gap: 12px !important; margin-bottom: 12px !important; }
+body.theme-wechat .avatar { border: none !important; border-radius: 4px !important; width: 40px !important; height: 40px !important; font-weight: normal !important;}
+body.theme-wechat .avatar-container { border-radius: 4px !important; width: 40px !important; height: 40px !important;}
+body.theme-wechat .msg-content { max-width: calc(100vw - 120px) !important; }
+body.theme-wechat .bubble { 
+    border: none !important; padding: 6px 10px !important; font-weight: normal !important; 
+    font-size: 1.05em !important; /* 🌟 恢复气泡跟随全局字号 */
+    border-radius: 4px !important; position: relative; line-height: 1.6; 
+}
+body.theme-wechat .yume .bubble::before { content: ''; position: absolute; top: 12px; left: -6px; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 6px solid var(--bubble-bg); }
+body.theme-wechat .user .bubble::before { content: ''; position: absolute; top: 12px; right: -6px; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 6px solid #95ec69; }
+[data-theme="dark"] body.theme-wechat .user .bubble::before { border-left-color: #2bba00; }
+body.theme-wechat .yume .bubble { background: var(--bubble-bg) !important; color: var(--text-color) !important; }
+body.theme-wechat .user .bubble { background: #95ec69 !important; color: #000 !important; }
+[data-theme="dark"] body.theme-wechat .user .bubble { background: #2bba00 !important; color: #fff !important; }
+body.theme-wechat .chat-image { border: none !important; border-radius: 4px !important; padding: 0 !important; }
+body.theme-wechat .timestamp-container, body.theme-wechat .read-status, body.theme-wechat .v-time { display: none !important; } 
+body.theme-wechat .v-time-box { background: transparent !important; color: #999 !important; border: none !important; font-style: normal !important; transform: none !important; font-size: 0.85em !important; font-weight: normal !important; margin: 10px 0 !important;}
+
+/* --- 4. 设置面板微信化 --- */
+body.theme-wechat .modal-content { border: none !important; border-radius: 12px !important; background: #f5f5f5 !important; }
+[data-theme="dark"] body.theme-wechat .modal-content { background: #1f1f1f !important; }
+body.theme-wechat .tabs { border-bottom: 1px solid rgba(0,0,0,0.1) !important; background: transparent !important; }
+[data-theme="dark"] body.theme-wechat .tabs { border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+body.theme-wechat .tab-btn { border: none !important; color: #666 !important; font-weight: 500 !important; }
+body.theme-wechat .tab-btn.active { background: transparent !important; color: #07c160 !important; border-bottom: 2px solid #07c160 !important; }
+body.theme-wechat .form-group input[type="text"], body.theme-wechat .form-group input[type="number"], body.theme-wechat .form-group select, body.theme-wechat .form-group textarea { border: none !important; border-radius: 8px !important; background: #ffffff !important; font-weight: normal !important; }
+[data-theme="dark"] body.theme-wechat .form-group input, [data-theme="dark"] body.theme-wechat .form-group select, [data-theme="dark"] body.theme-wechat .form-group textarea { background: #2c2c2c !important; }
+body.theme-wechat .setting-row { background: #fff !important; border-radius: 8px !important; padding: 12px 15px !important; margin-bottom: 10px !important; }
+[data-theme="dark"] body.theme-wechat .setting-row { background: #2c2c2c !important; }
+body.theme-wechat .setting-row label:first-child { font-weight: normal !important; font-size: 1em !important;}
+body.theme-wechat .slider { border: none !important; background-color: #e5e5e5 !important; }
+body.theme-wechat input:checked + .slider { background-color: #07c160 !important; }
+body.theme-wechat input:checked + .slider:before { transform: translateX(20px) !important; border: none !important; }
+body.theme-wechat .slider:before { border: none !important; left: 3px !important; bottom: 3px !important; width: 20px !important; height: 20px !important; background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;}
+body.theme-wechat .action-btn { background: #07c160 !important; color: #fff !important; border: none !important; font-weight: 500 !important; border-radius: 8px !important;}
+body.theme-wechat .outline-btn { background: #fff !important; border: 1px solid rgba(0,0,0,0.1) !important; color: #333 !important; font-weight: 500 !important; border-radius: 8px !important;}
+[data-theme="dark"] body.theme-wechat .outline-btn { background: #2c2c2c !important; border-color: rgba(255,255,255,0.1) !important; color: #ccc !important;}
+body.theme-wechat .setting-divider { border-color: rgba(0,0,0,0.1) !important; }
+body.theme-wechat .setting-divider span { background: #f5f5f5 !important; font-weight: normal !important; color: #999 !important;}
+body.theme-wechat .sticky-preview { border-bottom: none !important; background: transparent !important; box-shadow: none !important;}
+body.theme-wechat .avatar-preview-container { border: none !important; background: transparent !important; }
+body.theme-wechat .floating-ball { background: #fff !important; color: #333 !important; border: 1px solid rgba(0,0,0,0.1) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; border-radius: 50% !important; }
+[data-theme="dark"] body.theme-wechat .floating-ball { background: #2c2c2c !important; color: #ccc !important; border-color: transparent !important; }
+body.theme-wechat .floating-ball svg { stroke: currentColor !important; }
+
+/* 默认主题下隐藏微信专属按钮，保证原有排版不受影响 */
+.wechat-more-btn { display: none; }
+.header-actions-group { display: flex; gap: 8px; }
+
+/* --- 5. 应用面板与拉条 微信化 --- */
+body.theme-wechat .app-panel {
+    border: none !important; border-radius: 12px !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12) !important;
+    background: #ffffff !important;
+}
+[data-theme="dark"] body.theme-wechat .app-panel { background: #2c2c2c !important; box-shadow: 0 6px 24px rgba(0,0,0,0.4) !important; }
+body.theme-wechat .app-panel-header {
+    background: #f5f5f5 !important; color: #999 !important; font-weight: normal !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important; letter-spacing: 0 !important; font-size: 0.8em !important;
+}
+[data-theme="dark"] body.theme-wechat .app-panel-header { background: #1f1f1f !important; border-bottom-color: rgba(255,255,255,0.05) !important; }
+body.theme-wechat .app-icon {
+    border: none !important; box-shadow: none !important; background: #f5f5f5 !important; border-radius: 12px !important;
+}
+[data-theme="dark"] body.theme-wechat .app-icon { background: #3a3a3a !important; }
+body.theme-wechat .app-item span { font-weight: normal !important; color: #666 !important; }
+
+/* 微信主题专属绿色拉条 */
+body.theme-wechat .form-group input[type="range"]::-webkit-slider-thumb {
+    background: #07c160 !important; border-color: #fff !important; box-shadow: 0 2px 6px rgba(7, 193, 96, 0.4) !important;
+}
+[data-theme="dark"] body.theme-wechat .form-group input[type="range"]::-webkit-slider-thumb {
+    background: #2bba00 !important; border-color: #2c2c2c !important;
+}
+
+/* ============================================================== */
+
+/* --- 暗黑模式亮色按钮统一压暗补丁 --- */
+[data-theme="dark"] .input-top-tag,
+[data-theme="dark"] .send-btn,
+[data-theme="dark"] .action-btn,
+[data-theme="dark"] .card-category-tag,
+[data-theme="dark"] .app-panel-header,
+[data-theme="dark"] .v-time-box,
+[data-theme="dark"] .system-msg-content,
+[data-theme="dark"] .mini-phone-icon {
+    background-color: #2a2a2a; /* 按钮的底色，数值越小越黑 */
+    color: #a8a8a8; /* 按钮上的文字颜色 */
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .input-top-tag,
+    :root:not([data-theme="light"]) .send-btn,
+    :root:not([data-theme="light"]) .action-btn,
+    :root:not([data-theme="light"]) .card-category-tag,
+    :root:not([data-theme="light"]) .app-panel-header,
+    :root:not([data-theme="light"]) .v-time-box,
+    :root:not([data-theme="light"]) .system-msg-content,
+    :root:not([data-theme="light"]) .mini-phone-icon {
+        background-color: #2a2a2a;
+        color: #a8a8a8;
+    }
+}
+
+/* --- 日夜间图标切换逻辑 --- */
+.sun-icon { display: none; } /* 默认隐藏太阳 */
+
+/* 当进入暗黑模式时：隐藏月亮，显示太阳 */
+[data-theme="dark"] .moon-icon { display: none; }
+[data-theme="dark"] .sun-icon { display: block; }
+
+/* 兼容跟随手机系统的暗黑模式 */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .moon-icon { display: none; }
+    :root:not([data-theme="light"]) .sun-icon { display: block; }
+}
+
+/* --- 暗黑模式红色(删除)按钮压暗补丁 --- */
+[data-theme="dark"] #confirmModalYesBtn,
+[data-theme="dark"] .danger-btn,
+[data-theme="dark"] .phone-btn.hangup,
+[data-theme="dark"] button[onclick="deleteSelectedMessages()"] {
+    background-color: #992b2b !important; /* 压暗后的深红色 */
+    color: #e0e0e0 !important; /* 白色文字也稍微柔和一点 */
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) #confirmModalYesBtn,
+    :root:not([data-theme="light"]) .danger-btn,
+    :root:not([data-theme="light"]) .phone-btn.hangup,
+    :root:not([data-theme="light"]) button[onclick="deleteSelectedMessages()"] {
+        background-color: #992b2b !important;
+        color: #e0e0e0 !important;
+    }
+}
+
+/* --- 打卡系统专属 CSS --- */
+.checkin-modal-content { height: 85vh; display: flex; flex-direction: column; }
+.checkin-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: var(--bg-color); background-image: var(--bg-pattern); background-size: var(--bg-size); }
+.checkin-item { background: var(--panel-bg); border: 3px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 4px 4px 0 var(--border-color); position: relative; }
+.checkin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.checkin-title { font-weight: 900; font-size: 1.2em; color: var(--text-color); }
+.checkin-badge { font-size: 0.7em; font-weight: 900; padding: 3px 6px; border: 2px solid var(--border-color); border-radius: 4px; font-style: italic; background: var(--text-color); color: var(--bg-color); }
+.checkin-avatars { display: flex; align-items: center; margin-bottom: 12px; }
+.checkin-avatar { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--border-color); background-size: cover; background-position: center; background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 0.9em; color: var(--text-color); z-index: 1; }
+.checkin-avatar.overlap { margin-left: -12px; z-index: 2; box-shadow: -2px 0 0 var(--border-color); }
+.checkin-progress-bar { height: 14px; border: 3px solid var(--border-color); border-radius: 8px; background: var(--bg-color); overflow: hidden; margin-bottom: 6px; }
+.checkin-progress-fill { height: 100%; background: var(--text-color); width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.checkin-progress-text { font-size: 0.85em; font-weight: 900; opacity: 0.8; text-align: right; font-style: italic; }
+.checkin-actions { display: flex; gap: 10px; margin-top: 15px; }
+
+/* --- 红包专属样式 (精美小巧柔和版) --- */
+.red-packet-card {
+    background: #ff6b6b; /* 更柔和的珊瑚粉红 */
+    border: 2px solid var(--border-color); /* 边框变细 */
+    border-radius: 10px;
+    width: 200px; /* 宽度变小，更精巧 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 var(--border-color);
+    user-select: none;
+    transition: transform 0.1s;
+}
+.red-packet-card:active { transform: scale(0.98); }
+[data-theme="dark"] .red-packet-card { background: #d9534f; } /* 暗黑模式压暗 */
+
+.rp-top {
+    padding: 12px 14px; /* 内边距缩小 */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.rp-icon {
+    width: 32px; /* 图标缩小 */
+    height: 32px;
+    background: #ffebd6; /* 柔和的奶油色 */
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 900;
+    color: #ff6b6b;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+.rp-content {
+    color: #ffebd6;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.rp-title {
+    font-size: 1em; /* 标题变小 */
+    font-weight: 900;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+}
+.rp-desc {
+    font-size: 0.75em;
+    opacity: 0.9;
+    font-weight: bold;
+}
+.rp-bottom {
+    background: var(--panel-bg);
+    padding: 6px 14px;
+    font-size: 0.7em;
+    color: var(--text-color);
+    font-weight: 900;
+    opacity: 0.6;
+}
+
+/* 聊天界面内的分享卡片 CSS */
+.checkin-chat-card { width: 100%; min-width: 220px; background: var(--bg-color); border: 3px dashed var(--border-color); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+/* --- 引用气泡内的打卡卡片自动缩小（迷你版） --- */
+.bubble .checkin-chat-card {
+    min-width: 150px;
+    padding: 8px;
+    border-width: 2px;
+    gap: 4px;
+    border-radius: 8px;
+    background: transparent; /* 去除双层背景色，更清爽 */
+    margin: 4px 0;
+}
+/* 缩小标题和打卡标签 */
+.bubble .checkin-chat-card > div:first-child > div:first-child {
+    font-size: 0.9em !important;
+    line-height: 1.2 !important;
+}
+.bubble .checkin-chat-card span {
+    padding: 1px 3px !important;
+    font-size: 0.6em !important;
+}
+/* 缩小双人羁绊头像 */
+.bubble .checkin-chat-card .checkin-avatar {
+    width: 22px;
+    height: 22px;
+    border-width: 2px;
+    font-size: 0.7em;
+}
+.bubble .checkin-chat-card .checkin-avatar.overlap {
+    margin-left: -8px;
+    box-shadow: -1px 0 0 var(--border-color);
+}
+/* 缩小状态文字 */
+.bubble .checkin-chat-card > div[style*="font-size:0.85em"] {
+    font-size: 0.7em !important;
+    margin-top: 0 !important;
+}
+/* 缩小进度条文字 */
+.bubble .checkin-chat-card div[style*="font-size:0.8em"] {
+    font-size: 0.65em !important;
+}
+.bubble .checkin-chat-card .checkin-progress-text {
+    font-size: 0.65em !important;
+}
+/* 压扁进度条 */
+.bubble .checkin-chat-card .checkin-progress-bar {
+    height: 6px !important;
+    border-width: 2px !important;
+    margin-top: 2px;
+}
+
+/* --- 信件系统专属 CSS --- */
+.letter-paper {
+    background-color: var(--panel-bg);
+    /* 核心：生成逼真的信纸横线 */
+    background-image: repeating-linear-gradient(transparent, transparent 31px, rgba(128,128,128,0.2) 31px, rgba(128,128,128,0.2) 32px);
+    background-attachment: local;
+    color: var(--text-color);
+    padding: 32px 20px 20px 20px;
+    border-radius: 4px;
+    font-family: inherit;
+    line-height: 32px; /* 与横线完美对齐 */
+    font-weight: 900;
+    border: 3px solid var(--border-color);
+    white-space: pre-wrap;
+    box-shadow: 6px 6px 0 var(--border-color);
+    margin-bottom: 15px;
+    font-size: 1.05em;
+    word-break: break-all;
+    position: relative;
+}
+/* 给信纸加个复古小印记 */
+.letter-paper::after {
+    content: 'POSTBOX';
+    position: absolute;
+    bottom: -15px;
+    right: 10px;
+    font-size: 0.6em;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 2px;
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.letter-item {
+    background: var(--panel-bg); border: 3px solid var(--border-color); border-radius: 8px; padding: 15px;
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    box-shadow: 3px 3px 0 var(--border-color); transition: transform 0.1s;
+}
+.letter-item:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+.letter-item.unread { border-style: dashed; }
+.unread-dot {
+    width: 10px; height: 10px; background: #ff4444; border: 2px solid var(--border-color);
+    border-radius: 50%; display: inline-block; flex-shrink: 0;
+}
+
+/* --- 生理期日历专属 CSS --- */
+.cal-day {
+    aspect-ratio: 1; display: flex; justify-content: center; align-items: center;
+    border: 3px solid var(--border-color); border-radius: 8px; font-weight: 900; cursor: pointer; 
+    background: var(--panel-bg); transition: transform 0.1s, box-shadow 0.1s; box-shadow: 2px 2px 0 var(--border-color);
+}
+.cal-day.empty { background: transparent; border-color: transparent; pointer-events: none; box-shadow: none; }
+.cal-day.today { border-style: dashed; }
+.cal-day.marked { 
+    background: #ff4444; color: #fff; 
+    box-shadow: inset 0 0 0 3px var(--panel-bg), 2px 2px 0 var(--border-color); 
+}
+.cal-day:active:not(.empty) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--border-color); }
+[data-theme="dark"] .cal-day.marked { background: #992b2b; }
+
+/* 预测出来的月经期格子样式 */
+.cal-day.predicted {
+    background: transparent;
+    border: 3px dashed #ff9999;
+    color: #ff4444;
+}
+
+/* ====== 新增：左下角抽屉侧边栏 (完美隐藏黑边版) ====== */
+.side-toolbar {
+    position: fixed;
+    left: 0;
+    bottom: 135px;
+    display: flex;
+    align-items: center;
+    z-index: 95;
+    /* 关键修复：向左平移 100% 再多移 3px，彻底把黑边和阴影藏进屏幕外 */
+    transform: translateX(calc(-100% - 3px));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.side-toolbar.open {
+    transform: translateX(0);
+}
+
+.side-toolbar-content {
+    background: var(--panel-bg);
+    border: 2.5px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 3px 3px 0 var(--border-color);
+    position: relative; /* 确立层级 */
+    z-index: 1;
+}
+
+.side-toolbar-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--bg-color);
+    border: 2.5px solid var(--border-color);
+    border-radius: var(--btn-radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--border-color);
+    transition: transform 0.1s ease;
+}
+.side-toolbar-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0;
+}
+.side-toolbar-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 侧边栏的拉拽小把手 */
+.side-toolbar-handle {
+    /* 关键修复：绝对定位，悬浮在容器右侧外面，不影响隐藏计算 */
+    position: absolute;
+    left: calc(100% - 2.5px); /* 无缝贴合右边框 */
+    width: 16px;
+    height: 36px;
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: 2.5px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--border-color);
+    z-index: 2;
+}
+.side-toolbar-handle svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s;}
+.side-toolbar.open .side-toolbar-handle svg { transform: rotate(180deg); }
+
+/* ====== API 解读系统专属样式 ====== */
+/* 修改放大镜图标，强行定位在头像正下方 */
+.interpret-btn {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--border-color);
+    z-index: 10;
+}
+.interpret-btn:active { transform: translate(calc(-50% + 1px), 1px); box-shadow: 0 0 0; }
+.interpret-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 解读结果浮窗 */
+#aiResultBox {
+    padding: 15px; border-radius: 8px; border: 3px dashed var(--border-color);
+    background: var(--bg-color); font-weight: 900; line-height: 1.6;
+    margin-top: 10px; font-size: 0.95em; max-height: 40vh; overflow-y: auto;
+}
+.ai-loading-dots span { display:inline-block; width:6px; height:6px; background:var(--text-color); border-radius:50%; margin:0 2px; animation:typingDot 1.4s infinite ease-in-out both;}
+.ai-loading-dots span:nth-child(1) { animation-delay:-0.32s; }
+.ai-loading-dots span:nth-child(2) { animation-delay:-0.16s; }
+
+/* --- 苹果主题防挤压竖排补丁 --- */
+body.theme-imessage .message {
+    max-width: 85% !important;
+}
+body.theme-imessage .message > div {
+    max-width: 100% !important;
+    width: max-content !important;
+}
+body.theme-imessage .msg-content {
+    display: block !important;
+    width: max-content !important;
+    max-width: 100% !important;
+}
+body.theme-imessage .bubble {
+    width: max-content !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+    white-space: pre-wrap !important;
+    display: inline-block !important;
+}
+
+/* --- 系统消息与时间戳 (苹果&微信专属柔和化) --- */
+body.theme-imessage .v-time-box, body.theme-imessage .system-msg-content,
+body.theme-wechat .v-time-box, body.theme-wechat .system-msg-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    font-weight: normal !important; transform: none !important; font-style: normal !important;
+    padding: 2px 8px !important; letter-spacing: 0 !important;
+}
+
+/* 苹果特调小灰字 */
+body.theme-imessage .v-time-box, body.theme-imessage .system-msg-content {
+    color: #8e8e93 !important; font-size: 11px !important; font-weight: bold !important;
+}
+body.theme-imessage .v-time, body.theme-imessage .v-date { font-size: 11px !important; display: inline-block !important; }
+
+/* 微信特调小灰字 */
+body.theme-wechat .v-time-box, body.theme-wechat .system-msg-content {
+    color: #999999 !important; font-size: 12px !important;
+}
+body.theme-wechat .v-time, body.theme-wechat .v-date { display: inline-block !important; font-size: 12px !important; }
+
+/* 修复原始微信主题隐藏时间的误伤（在大约 596 行左右如果看到这句可以直接删掉，不删也没事，上面的代码会覆盖它） */
+body.theme-wechat .timestamp-container, body.theme-wechat .read-status { display: none !important; } 
+
+/* --- 微信与苹果主题：查看更多按钮美化 --- */
+body.theme-wechat .load-more, body.theme-imessage .load-more {
+    text-align: center !important;
+    font-size: 12px !important;
+    color: #999999 !important; /* 浅灰色柔和文字 */
+    font-weight: normal !important;
+    font-style: normal !important;
+    text-transform: none !important;
+    text-decoration: none !important; /* 去掉粗暴的下划线 */
+    background: transparent !important;
+    padding: 12px !important;
+    letter-spacing: 1px !important;
+}
+
+/* ================= Jelly Pink 果冻少女粉主题 ================= */
+body.theme-pink {
+    --bg-color: #fff0f3 !important;
+    --bg-pattern: none !important; /* 去除粉色渐变渲染，防卡顿 */
+    --text-color: #d15b7c !important;
+    --border-color: rgba(255, 255, 255, 0.5) !important;
+    --panel-bg: rgba(255, 255, 255, 0.4) !important;
+    --bubble-bg: rgba(255, 255, 255, 0.5) !important;
+    --btn-radius: 20px !important; 
+}
+[data-theme="dark"] body.theme-pink {
+    --bg-color: #2b1a1f !important;
+    --bg-pattern: none !important; /* 暗黑模式也去除渐变 */
+    --text-color: #ffb3c6 !important;
+    --border-color: rgba(255, 180, 200, 0.15) !important;
+    --panel-bg: rgba(60, 30, 40, 0.5) !important;
+    --bubble-bg: rgba(80, 40, 50, 0.5) !important;
+}
+
+/* 核心修复 2：彻底删掉全局 * 号杀手，只针对特定部件去阴影，绝不影响字体大小和粗细！ */
+
+/* 顶栏果冻化 */
+body.theme-pink .header-center-box, body.theme-pink .top-btn {
+    background: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.7), 0 4px 10px rgba(255, 180, 195, 0.2) !important;
+    border: 1.5px solid rgba(255,255,255,0.7) !important;
+    transform: none !important; 
+    border-radius: 24px !important;
+}
+[data-theme="dark"] body.theme-pink .header-center-box, [data-theme="dark"] body.theme-pink .top-btn {
+    background: rgba(43, 26, 31, 0.5) !important;
+    border-color: rgba(255, 180, 200, 0.15) !important;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 气泡果冻化核心：内发光 + 外柔影 */
+body.theme-pink .bubble { 
+    border-radius: 22px !important; 
+    border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 4px 6px rgba(255,255,255,0.8), 0 4px 12px rgba(255, 180, 195, 0.25) !important;
+}
+body.theme-pink .yume .bubble { 
+    border-bottom-left-radius: 6px !important; 
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,228,232,0.6)) !important;
+}
+body.theme-pink .user .bubble { 
+    border-bottom-right-radius: 6px !important;
+    background: linear-gradient(135deg, #ff9eb5, #ff7597) !important; 
+    color: #fff !important; 
+    border: 1.5px solid rgba(255,255,255,0.4) !important;
+    box-shadow: inset 0 4px 6px rgba(255,255,255,0.4), 0 6px 12px rgba(255, 117, 151, 0.3) !important;
+}
+
+[data-theme="dark"] body.theme-pink .bubble { box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.3) !important; border-color: rgba(255, 180, 200, 0.15) !important; }
+[data-theme="dark"] body.theme-pink .yume .bubble { background: linear-gradient(135deg, rgba(71,42,51,0.8), rgba(56,34,41,0.6)) !important; }
+[data-theme="dark"] body.theme-pink .user .bubble { background: linear-gradient(135deg, #a83c56, #8a2a40) !important; color: #ffe4e8 !important; border-color: rgba(255,180,200,0.2) !important;}
+
+/* 头像变圆滑 */
+body.theme-pink .avatar, body.theme-pink .avatar-container { 
+    border-radius: 50% !important; 
+    border: 1.5px solid rgba(255,255,255,0.8) !important;
+    box-shadow: 0 4px 10px rgba(255, 180, 195, 0.3) !important;
+}
+[data-theme="dark"] body.theme-pink .avatar, [data-theme="dark"] body.theme-pink .avatar-container {
+    border-color: rgba(255, 180, 200, 0.15) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 底栏果冻化：悬浮药丸 + 高级半透明毛玻璃 */
+body.theme-pink .input-wrapper { background: transparent !important; border: none !important; }
+body.theme-pink .input-top-tag { display: none !important; } /* 隐藏硬核黑边标签 */
+body.theme-pink .input-area { 
+    border-radius: 30px !important; padding: 6px 8px !important; 
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+    box-shadow: inset 0 2px 6px rgba(255,255,255,0.7), 0 8px 24px rgba(255, 180, 195, 0.2) !important;
+    margin-bottom: 5px !important;
+}
+[data-theme="dark"] body.theme-pink .input-area {
+    background: rgba(43, 26, 31, 0.6) !important;
+    border-color: rgba(255, 180, 200, 0.15) !important;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+body.theme-pink .main-input { background: transparent !important; border: none !important; }
+body.theme-pink .send-btn { 
+    border-radius: 24px !important; 
+    background: linear-gradient(135deg, #ff9eb5, #ff7597) !important; 
+    color: #fff !important; 
+    padding: 8px 18px !important; 
+    border: 1.5px solid rgba(255,255,255,0.3) !important;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 4px 10px rgba(255, 117, 151, 0.3) !important; 
+}
+[data-theme="dark"] body.theme-pink .send-btn { 
+    background: linear-gradient(135deg, #a83c56, #8a2a40) !important; 
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255,180,200,0.2) !important;
+}
+
+/* 弹窗果冻化 */
+body.theme-pink .modal-content {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 10px 30px rgba(255, 180, 195, 0.25) !important;
+    border-radius: 24px !important;
+}
+[data-theme="dark"] body.theme-pink .modal-content { 
+    background: rgba(43, 26, 31, 0.75) !important; 
+    border-color: rgba(255, 180, 200, 0.15) !important; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+}
+
+        /* 音乐播放器专属样式 */
+        .music-pill-box {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--panel-bg); border: 3px solid var(--border-color);
+            pointer-events: auto; /* 开启悬浮点击穿透 */
+            border-radius: 30px; padding: 4px 6px 4px 12px; box-shadow: 3px 3px 0 var(--border-color);
+            height: 44px;
+        }
+        .music-pill-info {
+            display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; cursor: pointer;
+        }
+        .music-note-icon {
+            font-size: 14px; animation: spin 4s linear infinite; animation-play-state: paused;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .music-scroll-title {
+            font-weight: 900; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;
+        }
+        .music-pill-ctrl {
+            display: flex; gap: 4px; align-items: center;
+        }
+        .music-pill-ctrl .icon-btn, .music-card-ctrl .icon-btn {
+            width: 28px; height: 28px; border-radius: 50%; padding: 0;
+            border: 2px solid var(--border-color); box-shadow: 1px 1px 0 var(--border-color);
+        }
+        .music-pill-ctrl .icon-btn svg, .music-card-ctrl .icon-btn svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        .music-card-box {
+            pointer-events: auto; /* 👈 就是加了这一句 */
+            display: flex; align-items: center; gap: 12px;
+            background: var(--panel-bg); border: 3px solid var(--border-color);
+            border-radius: 12px; padding: 10px; box-shadow: 4px 4px 0 var(--border-color);
+        }
+        .music-card-cover {
+            width: 60px; height: 60px; border-radius: 8px; border: 2px solid var(--border-color); object-fit: cover;
+            background: var(--bg-color); flex-shrink: 0;
+            animation: spin 6s linear infinite; animation-play-state: paused;
+        }
+        .music-card-right {
+            display: flex; flex-direction: column; flex: 1; min-width: 0; justify-content: space-between; height: 60px;
+        }
+        .music-card-info { cursor: pointer; }
+        .m-c-title { font-weight: 900; font-size: 1.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .m-c-singer { font-size: 0.75em; font-weight: bold; font-style: italic; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .music-card-ctrl { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+
+        .music-list-panel {
+            pointer-events: auto; /* 👈 还有这一句 */
+            background: var(--panel-bg); border: 3px solid var(--border-color); border-top: none;
+            border-radius: 0 0 12px 12px; box-shadow: 4px 4px 0 var(--border-color);
+            margin: 0 10px; display: flex; flex-direction: column; max-height: 200px;
+        }
+        .m-l-header {
+            display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 2px dashed var(--border-color);
+            font-weight: 900; font-size: 0.85em; opacity: 0.8;
+        }
+        .m-l-content {
+            flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px;
+        }
+        .m-l-item {
+            padding: 8px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 0.85em;
+            display: flex; justify-content: space-between; align-items: center; white-space: nowrap;
+        }
+        .m-l-item:hover, .m-l-item.playing { background: var(--text-color); color: var(--bg-color); }
+   
+        /* ================= 微信主题：红包专属 1:1 样式 ================= */
+body.theme-wechat .red-packet-card {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 4px !important;
+    width: 225px !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+body.theme-wechat .rp-top {
+    background: #f2753f !important; /* 微信经典橘红 */
+    padding: 12px 15px !important;
+    gap: 12px !important;
+}
+body.theme-wechat .rp-icon {
+    background-color: #fbd672 !important; /* 微信的黄色小钱币底色 */
+    color: #f2753f !important;
+    box-shadow: none !important;
+    font-size: 20px !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 4px !important;
+}
+body.theme-wechat .rp-content { color: #ffffff !important; }
+body.theme-wechat .rp-title { font-weight: normal !important; font-size: 15px !important; }
+body.theme-wechat .rp-desc { font-weight: normal !important; opacity: 0.8 !important; font-size: 12px !important; }
+body.theme-wechat .rp-bottom {
+    background: #ffffff !important;
+    color: #999999 !important;
+    padding: 4px 15px !important;
+    font-size: 0 !important; /* 隐藏原本的红包字样 */
+}
+body.theme-wechat .rp-bottom::before {
+    content: "微信红包"; /* 伪装成微信底栏字样 */
+    font-size: 11px !important;
+    font-weight: normal !important;
+}
+/* 微信暗黑模式下的红包压暗适配 */
+[data-theme="dark"] body.theme-wechat .rp-top { background: #cf5e33 !important; }
+[data-theme="dark"] body.theme-wechat .rp-icon { background-color: #d1b15c !important; color: #cf5e33 !important; }
+[data-theme="dark"] body.theme-wechat .rp-bottom { background: #2c2c2c !important; color: #777777 !important; }
+
+/* ================= 苹果 iMessage 主题：Apple Pay 高级样式 ================= */
+body.theme-imessage .red-packet-card {
+    background: #000000 !important; /* Apple Pay Cash 的纯黑质感 */
+    border: none !important;
+    border-radius: 18px !important; /* iOS 圆润风格 */
+    width: 220px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+body.theme-imessage .rp-top {
+    padding: 16px 16px 12px 16px !important;
+    gap: 12px !important;
+}
+body.theme-imessage .rp-icon {
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border-radius: 50% !important; /* iOS 喜欢正圆形 */
+}
+body.theme-imessage .rp-content { color: #ffffff !important; }
+body.theme-imessage .rp-title { font-weight: 500 !important; font-size: 15px !important; }
+body.theme-imessage .rp-desc { font-weight: 400 !important; font-size: 12px !important; opacity: 0.8 !important;}
+body.theme-imessage .rp-bottom {
+    background: transparent !important;
+    color: #ffffff !important;
+    padding: 0 16px 16px 16px !important;
+    font-size: 0 !important; 
+}
+body.theme-imessage .rp-bottom::before {
+    content: " Pay"; /* 伪装成苹果支付的标志 */
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+/* 苹果暗黑模式下的颜色微调 */
+[data-theme="dark"] body.theme-imessage .red-packet-card { background: #1c1c1e !important; }
+     
+/* ================= Aero Glass 全透毛玻璃主题 ================= */
+body.theme-glass {
+    --bg-color: #f0f4f8 !important;
+    --bg-pattern: none !important; /* 去除渐变背景，防卡顿，方便自定义壁纸透出 */
+    --panel-bg: rgba(255, 255, 255, 0.4) !important;
+    --bubble-bg: rgba(255, 255, 255, 0.55) !important;
+    --border-color: rgba(255, 255, 255, 0.6) !important;
+    --text-color: #334155 !important;
+}
+[data-theme="dark"] body.theme-glass {
+    --bg-color: #0f172a !important;
+    --bg-pattern: none !important; /* 暗黑模式也去除渐变 */
+    --panel-bg: rgba(30, 41, 59, 0.5) !important;
+    --bubble-bg: rgba(51, 65, 85, 0.5) !important;
+    --border-color: rgba(255, 255, 255, 0.15) !important;
+    --text-color: #e2e8f0 !important;
+}
+
+/* 核心：高斯模糊全覆盖 */
+body.theme-glass .bubble,
+body.theme-glass .header-center-box,
+body.theme-glass .top-btn,
+body.theme-glass .avatar,
+body.theme-glass .avatar-container,
+body.theme-glass .app-icon,
+body.theme-glass .checkin-item,
+body.theme-glass .action-btn,
+body.theme-glass .outline-btn,
+body.theme-glass .red-packet-card,
+body.theme-glass .modal-content,
+body.theme-glass .side-toolbar-content,
+body.theme-glass .input-area {
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+    border-width: 1.5px !important; /* 让边框变细，更精致 */
+}
+[data-theme="dark"] body.theme-glass * {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 细节修饰：气泡变圆润，去掉小尾巴 */
+body.theme-glass .bubble { border-radius: 18px !important; }
+body.theme-glass .yume .bubble::before, body.theme-glass .yume .bubble::after,
+body.theme-glass .user .bubble::before, body.theme-glass .user .bubble::after {
+    display: none !important; 
+}
+body.theme-glass .avatar, body.theme-glass .avatar-container {
+    border-radius: 50% !important; /* 头像强制变正圆 */
+}
+
+/* ================= 随机念头卡片 (多主题完美适配版) ================= */
+
+/* --- 1. 默认漫画风主题 --- */
+.sudden-thought-card {
+    background: var(--panel-bg);
+    border: 3px solid var(--border-color); /* 漫画风粗边框 */
+    border-radius: 12px;
+    width: 230px;
+    box-shadow: 4px 4px 0 var(--border-color); /* 漫画风阴影 */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.event-card-top {
+    padding: 10px 15px;
+    border-bottom: 2px dashed var(--border-color);
+    font-weight: 900;
+    font-size: 0.8em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0.8;
+    font-style: italic;
+}
+.event-card-body {
+    padding: 15px;
+    color: var(--text-color);
+    font-size: 1.05em;
+    font-weight: bold;
+    line-height: 1.6;
+}
+
+/* --- 2. 微信 (WeChat) 专属卡片适配 (服务通知风) --- */
+body.theme-wechat .sudden-thought-card {
+    background: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    width: 250px !important;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05) !important; /* 极弱的描边阴影 */
+}
+[data-theme="dark"] body.theme-wechat .sudden-thought-card { background: #2c2c2c !important; box-shadow: 0 0 0 1px rgba(255,255,255,0.05) !important; }
+
+body.theme-wechat .sudden-thought-card .event-card-top {
+    padding: 14px 15px 10px 15px !important;
+    border-bottom: 0.5px solid rgba(0,0,0,0.05) !important;
+    font-weight: normal !important;
+    font-size: 13px !important;
+    color: #999999 !important;
+    opacity: 1 !important;
+    font-style: normal !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+[data-theme="dark"] body.theme-wechat .sudden-thought-card .event-card-top { border-bottom-color: rgba(255,255,255,0.05) !important; color: #888888 !important; }
+
+/* 微信顶部的图标染成原生绿 */
+body.theme-wechat .sudden-thought-card .event-card-top svg {
+    color: #07c160 !important;
+    width: 15px !important; height: 15px !important;
+}
+[data-theme="dark"] body.theme-wechat .sudden-thought-card .event-card-top svg { color: #2bba00 !important; }
+
+body.theme-wechat .sudden-thought-card .event-card-body {
+    padding: 15px !important;
+    font-weight: 400 !important;
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+    color: #333333 !important;
+}
+[data-theme="dark"] body.theme-wechat .sudden-thought-card .event-card-body { color: #cccccc !important; }
+
+/* 微信：把下划线去掉，把重点词变成绿色 */
+body.theme-wechat .sudden-thought-card .event-card-body span[style*="text-decoration: underline"] {
+    text-decoration: none !important;
+    color: #07c160 !important;
+}
+[data-theme="dark"] body.theme-wechat .sudden-thought-card .event-card-body span[style*="text-decoration: underline"] { color: #2bba00 !important; }
+
+
+/* --- 3. 苹果 (iMessage) 专属卡片适配 (小程序 Rich Link 风) --- */
+body.theme-imessage .sudden-thought-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e5ea !important;
+    border-radius: 18px !important; /* 苹果圆润边框 */
+    width: 250px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important;
+}
+[data-theme="dark"] body.theme-imessage .sudden-thought-card { background: #1c1c1e !important; border-color: #38383a !important; box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important; }
+
+body.theme-imessage .sudden-thought-card .event-card-top {
+    background: #f2f2f6 !important; /* 苹果顶部小灰条 */
+    padding: 10px 15px !important;
+    border-bottom: 1px solid #e5e5ea !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    color: #8e8e93 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-style: normal !important;
+}
+[data-theme="dark"] body.theme-imessage .sudden-thought-card .event-card-top { background: #2c2c2e !important; border-bottom-color: #38383a !important; color: #98989d !important; }
+
+body.theme-imessage .sudden-thought-card .event-card-body {
+    padding: 15px !important;
+    font-weight: normal !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+    color: #000000 !important;
+}
+[data-theme="dark"] body.theme-imessage .sudden-thought-card .event-card-body { color: #ffffff !important; }
+
+/* 苹果：去掉下划线，重点词变成经典的 iMessage 蓝色并加粗 */
+body.theme-imessage .sudden-thought-card .event-card-body span[style*="text-decoration: underline"] {
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    color: #0b84ff !important;
+}
+
+/* ================= 音乐分享卡片 (多主题完美适配) ================= */
+.music-chat-card {
+    display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer;
+    width: 240px; position: relative; overflow: hidden;
+}
+.music-chat-card .mc-cover {
+    width: 45px; height: 45px; object-fit: cover; flex-shrink: 0;
+}
+.music-chat-card .mc-info {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;
+}
+.music-chat-card .mc-title {
+    font-weight: 900; font-size: 1.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.music-chat-card .mc-singer {
+    font-size: 0.75em; font-weight: bold; opacity: 0.8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic;
+}
+.music-chat-card .mc-play-btn {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+}
+.music-chat-card .mc-play-btn svg { width: 12px; height: 12px; fill: currentColor; margin-left: 2px; }
+
+/* 1. 默认漫画风主题 */
+.music-chat-card {
+    background: var(--panel-bg); border: 3px solid var(--border-color);
+    border-radius: 12px; box-shadow: 4px 4px 0 var(--border-color); color: var(--text-color);
+}
+.music-chat-card .mc-cover { border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-color); }
+.music-chat-card .mc-play-btn { border: 2px solid var(--border-color); box-shadow: 2px 2px 0 var(--border-color); background: var(--bg-color); color: var(--text-color); }
+
+/* 2. 微信主题 (纯白干净小卡片) */
+body.theme-wechat .music-chat-card {
+    background: #ffffff !important; border: none !important; border-radius: 8px !important;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05) !important; color: #333333 !important;
+}
+[data-theme="dark"] body.theme-wechat .music-chat-card { background: #2c2c2c !important; color: #cccccc !important; box-shadow: 0 0 0 1px rgba(255,255,255,0.05) !important; }
+body.theme-wechat .music-chat-card .mc-title { font-weight: 500 !important; font-size: 15px !important; }
+body.theme-wechat .music-chat-card .mc-singer { font-weight: normal !important; font-style: normal !important; opacity: 0.6 !important; }
+body.theme-wechat .music-chat-card .mc-cover { border: none !important; border-radius: 4px !important; }
+body.theme-wechat .music-chat-card .mc-play-btn { border: 1px solid rgba(0,0,0,0.1) !important; box-shadow: none !important; background: transparent !important; color: #666 !important; }
+[data-theme="dark"] body.theme-wechat .music-chat-card .mc-play-btn { border-color: rgba(255,255,255,0.1) !important; color: #999 !important; }
+
+/* 3. 苹果主题 (Apple Music 风圆润卡片) */
+body.theme-imessage .music-chat-card {
+    background: #f2f2f6 !important; border: 1px solid #e5e5ea !important; border-radius: 16px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important; color: #000000 !important;
+}
+[data-theme="dark"] body.theme-imessage .music-chat-card { background: #2c2c2e !important; border-color: #38383a !important; color: #ffffff !important; }
+body.theme-imessage .music-chat-card .mc-title { font-weight: 600 !important; font-size: 15px !important; }
+body.theme-imessage .music-chat-card .mc-singer { font-weight: normal !important; font-style: normal !important; color: #fa243c !important; opacity: 0.9 !important; } /* Apple Music 标志性粉红色 */
+body.theme-imessage .music-chat-card .mc-cover { border: none !important; border-radius: 8px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; }
+body.theme-imessage .music-chat-card .mc-play-btn { border: none !important; box-shadow: none !important; background: #e5e5ea !important; color: #fa243c !important; }
+[data-theme="dark"] body.theme-imessage .music-chat-card .mc-play-btn { background: #1c1c1e !important; }
+
+/* 4. 少女粉主题 (果冻感) */
+body.theme-pink .music-chat-card {
+    background: rgba(255, 255, 255, 0.6) !important; backdrop-filter: blur(10px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important; border-radius: 20px !important;
+    box-shadow: inset 0 4px 6px rgba(255,255,255,0.7), 0 6px 12px rgba(255, 180, 195, 0.2) !important;
+    color: #d15b7c !important;
+}
+[data-theme="dark"] body.theme-pink .music-chat-card { background: rgba(80, 40, 50, 0.5) !important; border-color: rgba(255, 180, 200, 0.15) !important; color: #ffb3c6 !important; }
+body.theme-pink .music-chat-card .mc-cover { border-radius: 50% !important; border: 2px solid #fff !important; box-shadow: 0 2px 6px rgba(255,180,195,0.4) !important; }
+body.theme-pink .music-chat-card .mc-play-btn { background: linear-gradient(135deg, #ff9eb5, #ff7597) !important; color: #fff !important; border: none !important; box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 4px 8px rgba(255,117,151,0.3) !important; }
+
+/* 5. 毛玻璃主题 */
+body.theme-glass .music-chat-card {
+    background: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(18px) !important; -webkit-backdrop-filter: blur(18px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.6) !important; border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important; color: var(--text-color) !important;
+}
+body.theme-glass .music-chat-card .mc-cover { border-radius: 8px !important; border: 1.5px solid rgba(255,255,255,0.5) !important; }
+body.theme-glass .music-chat-card .mc-play-btn { background: rgba(255,255,255,0.5) !important; color: var(--text-color) !important; border: 1.5px solid rgba(255,255,255,0.6) !important; box-shadow: none !important; }
+
+/* ================= 打卡与攒钱分享卡片 (多主题完美适配) ================= */
+
+/* 2. 微信主题 (纯白干净小卡片) */
+body.theme-wechat .checkin-chat-card {
+    background: #ffffff !important; border: none !important; border-radius: 8px !important;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05) !important; color: #333333 !important; padding: 12px 14px !important;
+}
+[data-theme="dark"] body.theme-wechat .checkin-chat-card { background: #2c2c2c !important; color: #cccccc !important; box-shadow: 0 0 0 1px rgba(255,255,255,0.05) !important; }
+body.theme-wechat .checkin-chat-card .checkin-avatar { border: none !important; }
+body.theme-wechat .checkin-chat-card .checkin-progress-bar { border: none !important; background: rgba(0,0,0,0.05) !important; border-radius: 4px !important;}
+[data-theme="dark"] body.theme-wechat .checkin-chat-card .checkin-progress-bar { background: rgba(255,255,255,0.05) !important; }
+body.theme-wechat .checkin-chat-card .checkin-progress-fill { background: #07c160 !important; border-radius: 4px !important;}
+[data-theme="dark"] body.theme-wechat .checkin-chat-card .checkin-progress-fill { background: #2bba00 !important; }
+body.theme-wechat .checkin-chat-card span[style*="font-size:0.7em"] { background: rgba(7, 193, 96, 0.1) !important; color: #07c160 !important; border-radius: 4px !important; font-style: normal !important; font-weight: normal !important;}
+[data-theme="dark"] body.theme-wechat .checkin-chat-card span[style*="font-size:0.7em"] { background: rgba(43, 186, 0, 0.2) !important; color: #2bba00 !important; }
+
+/* 3. 苹果主题 (Apple 风圆润卡片) */
+body.theme-imessage .checkin-chat-card {
+    background: #f2f2f6 !important; border: 1px solid #e5e5ea !important; border-radius: 16px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important; color: #000000 !important; padding: 12px 14px !important;
+}
+[data-theme="dark"] body.theme-imessage .checkin-chat-card { background: #2c2c2e !important; border-color: #38383a !important; color: #ffffff !important; }
+body.theme-imessage .checkin-chat-card .checkin-avatar { border-color: #e5e5ea !important; }
+[data-theme="dark"] body.theme-imessage .checkin-chat-card .checkin-avatar { border-color: #38383a !important; }
+body.theme-imessage .checkin-chat-card .checkin-progress-bar { border: none !important; background: #e5e5ea !important; border-radius: 4px !important; }
+[data-theme="dark"] body.theme-imessage .checkin-chat-card .checkin-progress-bar { background: #38383a !important; }
+body.theme-imessage .checkin-chat-card .checkin-progress-fill { background: #0b84ff !important; border-radius: 4px !important; }
+body.theme-imessage .checkin-chat-card span[style*="font-size:0.7em"] { background: #0b84ff !important; color: #fff !important; border-radius: 6px !important; font-style: normal !important; font-weight: 500 !important;}
+
+/* 4. 少女粉主题 (果冻感) */
+body.theme-pink .checkin-chat-card {
+    background: rgba(255, 255, 255, 0.6) !important; backdrop-filter: blur(10px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important; border-radius: 20px !important;
+    box-shadow: inset 0 4px 6px rgba(255,255,255,0.7), 0 6px 12px rgba(255, 180, 195, 0.2) !important;
+    color: #d15b7c !important; padding: 12px 14px !important;
+}
+[data-theme="dark"] body.theme-pink .checkin-chat-card { background: rgba(80, 40, 50, 0.5) !important; border-color: rgba(255, 180, 200, 0.15) !important; color: #ffb3c6 !important; }
+body.theme-pink .checkin-chat-card .checkin-avatar { border-color: rgba(255, 255, 255, 0.8) !important; }
+[data-theme="dark"] body.theme-pink .checkin-chat-card .checkin-avatar { border-color: rgba(255, 180, 200, 0.2) !important; }
+body.theme-pink .checkin-chat-card .checkin-progress-bar { border: 1.5px solid rgba(255, 255, 255, 0.8) !important; background: rgba(255, 255, 255, 0.4) !important; border-radius: 8px !important;}
+[data-theme="dark"] body.theme-pink .checkin-chat-card .checkin-progress-bar { border-color: rgba(255, 180, 200, 0.2) !important; background: rgba(0, 0, 0, 0.2) !important; }
+body.theme-pink .checkin-chat-card .checkin-progress-fill { background: linear-gradient(135deg, #ff9eb5, #ff7597) !important; border-radius: 6px !important;}
+[data-theme="dark"] body.theme-pink .checkin-chat-card .checkin-progress-fill { background: linear-gradient(135deg, #a83c56, #8a2a40) !important; }
+
+/* 5. 毛玻璃主题 */
+body.theme-glass .checkin-chat-card {
+    background: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(18px) !important; -webkit-backdrop-filter: blur(18px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.6) !important; border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important; color: var(--text-color) !important; padding: 12px 14px !important;
+}
+[data-theme="dark"] body.theme-glass .checkin-chat-card { background: rgba(30, 41, 59, 0.3) !important; border-color: rgba(255, 255, 255, 0.15) !important; }
+body.theme-glass .checkin-chat-card .checkin-progress-bar { border: 1.5px solid rgba(255,255,255,0.4) !important; background: rgba(0,0,0,0.05) !important; border-radius: 8px !important;}
+[data-theme="dark"] body.theme-glass .checkin-chat-card .checkin-progress-bar { border-color: rgba(255,255,255,0.1) !important; background: rgba(255,255,255,0.05) !important; }
+body.theme-glass .checkin-chat-card .checkin-progress-fill { background: var(--text-color) !important; border-radius: 6px !important;}
+
+/* ================= 悬浮歌词条 (灵动岛风格) ================= */
+#musicLyricBar {
+    position: fixed;
+    /* 👇 这里控制【普通所有排版】下歌词条的高度，数字越大越靠下！ */
+    top: 130px; 
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    width: max-content;
+    max-width: 85vw;
+    padding: 6px 16px;
+    background: var(--panel-bg);
+    border: 3px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 3px 3px 0 var(--border-color);
+    font-weight: 900;
+    font-size: 0.85em;
+    color: var(--text-color);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none; /* 穿透点击，不挡事 */
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#musicLyricBar.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* --- 配合巨型悬浮岛主题动态下移 --- */
+.giant_floating_island #musicLyricBar {
+    /* 👇 这里控制【单独巨型悬浮岛排版】下歌词条的高度，数字越大越靠下！ */
+    top: 200px !important;
+}
+
+/* --- 微信主题适配 (柔和无边框) --- */
+body.theme-wechat #musicLyricBar {
+    background: rgba(0,0,0,0.65) !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-weight: normal !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* --- 苹果主题适配 (高斯模糊胶囊) --- */
+body.theme-imessage #musicLyricBar {
+    background: rgba(250,250,250,0.7) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    color: #000 !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+[data-theme="dark"] body.theme-imessage #musicLyricBar {
+    background: rgba(30,30,30,0.7) !important;
+    border-color: rgba(255,255,255,0.05) !important;
+    color: #fff !important;
+}
+
+/* --- 少女粉主题 (果冻发光) --- */
+body.theme-pink #musicLyricBar {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1.5px solid rgba(255,255,255,0.8) !important;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.7), 0 4px 12px rgba(255, 180, 195, 0.2) !important;
+    color: #d15b7c !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+[data-theme="dark"] body.theme-pink #musicLyricBar {
+    background: rgba(43, 26, 31, 0.6) !important;
+    border-color: rgba(255, 180, 200, 0.15) !important;
+    color: #ffb3c6 !important;
+}
+
+/* --- 全透毛玻璃主题 --- */
+body.theme-glass #musicLyricBar {
+    background: rgba(255,255,255,0.2) !important;
+    border: 1.5px solid rgba(255,255,255,0.4) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+    color: var(--text-color) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+[data-theme="dark"] body.theme-glass #musicLyricBar {
+    background: rgba(0,0,0,0.3) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* ================= 红包互动领取状态 ================= */
+/* 领取或退回后，红包变暗 */
+.red-packet-card.opened, .red-packet-card.returned {
+    opacity: 0.6;
+    filter: grayscale(20%);
+    pointer-events: none; /* 领完不能再点 */
+}
+
+/* 默认主题的底栏文字 */
+.red-packet-card.opened .rp-bottom { opacity: 0.5; }
+.red-packet-card.opened .rp-bottom::before { content: "已领取" !important; font-size: inherit !important; }
+.red-packet-card.returned .rp-bottom::before { content: "已退回" !important; font-size: inherit !important; }
+
+/* 微信主题专属已领取状态 */
+body.theme-wechat .red-packet-card.opened .rp-top { background: #fabea7 !important; }
+body.theme-wechat .red-packet-card.opened .rp-icon { color: #fabea7 !important; }
+body.theme-wechat .red-packet-card.opened .rp-bottom::before { content: "微信红包已领取" !important; color: #fabea7 !important; }
+body.theme-wechat .red-packet-card.returned .rp-bottom::before { content: "微信红包已退回" !important; color: #fabea7 !important; }
+
+/* 苹果 iMessage 专属已领取状态 */
+body.theme-imessage .red-packet-card.opened { background: #1c1c1e !important; }
+body.theme-imessage .red-packet-card.opened .rp-bottom::before { content: " Pay 已收款" !important; }
+body.theme-imessage .red-packet-card.returned .rp-bottom::before { content: " Pay 已退还" !important; }
+
+/* ================= 修复微信夜间模式底栏图标看不见 ================= */
+[data-theme="dark"] body.theme-wechat #batchModeBtn::after { 
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>') !important; 
+    opacity: 0.8 !important;
+}
+[data-theme="dark"] body.theme-wechat button[title="发送表情"]::after { 
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>') !important; 
+    opacity: 0.8 !important;
+}
+[data-theme="dark"] body.theme-wechat button[title="发送图片"]::after { 
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>') !important; 
+    opacity: 0.8 !important;
+}
+
+/* ================= 解决手机自带“强制深色模式”导致的小尾巴色差 ================= */
+/* 废弃原有的边框画法，改用“背景色继承+旋转”，让手机系统强制把它和气泡当成一体 */
+
+/* 左侧 TA 气泡尾巴 */
+body.theme-wechat .yume .bubble::before {
+    border: none !important; 
+    width: 10px !important; 
+    height: 10px !important; 
+    background: inherit !important; /* 核心：完美继承气泡被系统压暗后的最终颜色 */
+    left: -4px !important; 
+    top: 14px !important;
+    transform: rotate(45deg) !important;
+    z-index: -1 !important; /* 藏在气泡下一层 */
+    border-bottom-left-radius: 2px !important; /* 微信小尾巴微微圆润 */
+    box-shadow: none !important;
+}
+
+/* 右侧 自己 气泡尾巴 */
+body.theme-wechat .user .bubble::before {
+    border: none !important; 
+    width: 10px !important; 
+    height: 10px !important; 
+    background: inherit !important; /* 同理，继承自己气泡的颜色 */
+    right: -4px !important; 
+    top: 14px !important;
+    transform: rotate(45deg) !important;
+    z-index: -1 !important;
+    border-top-right-radius: 2px !important;
+    box-shadow: none !important;
+}
+
+/* ================= Magazine 极简杂志线框主题 ================= */
+body.theme-magazine {
+    --bg-color: #ffffff;
+    --panel-bg: #ffffff;
+    --bubble-bg: #ffffff;
+    --border-color: #000000;
+    --bg-pattern: none !important; /* 纯白底色，去除点阵 */
+    --btn-radius: 0px !important; /* 强制所有按钮直角 */
+}
+[data-theme="dark"] body.theme-magazine {
+    --bg-color: #121212; --panel-bg: #121212; --bubble-bg: #121212; --border-color: #eeeeee;
+}
+
+/* 杀掉所有阴影和圆角 */
+body.theme-magazine * {
+    box-shadow: none !important; 
+    border-radius: 0 !important; 
+}
+
+/* 强制把气泡等变成 1px 细线框 */
+body.theme-magazine .message .avatar,
+body.theme-magazine .message .bubble,
+body.theme-magazine .modal-content,
+body.theme-magazine .form-group input,
+body.theme-magazine .form-group select,
+body.theme-magazine .form-group textarea,
+body.theme-magazine .app-panel,
+body.theme-magazine .app-icon,
+body.theme-magazine .checkin-item,
+body.theme-magazine .letter-item {
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 隐藏所有的 SVG 图标，还有那个多出来的微信按钮 */
+body.theme-magazine .top-btn svg,
+body.theme-magazine .tool-icon-btn svg,
+body.theme-magazine .wechat-more-btn {
+    display: none !important;
+}
+
+/* ================= 顶栏排版 ================= */
+body.theme-magazine .header {
+    background: var(--bg-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 10px 15px !important;
+    height: 60px !important;
+    align-items: center !important;
+}
+
+/* ================= 统一所有功能键：精致小黑块 ================= */
+body.theme-magazine .top-btn,        /* 👈 顶栏按钮也加进来统一控制了！ */
+body.theme-magazine .tool-icon-btn,
+body.theme-magazine .action-btn,
+body.theme-magazine .send-btn {
+    background: var(--border-color) !important; /* 统一黑底 */
+    color: var(--bg-color) !important; /* 白字 */
+    border: none !important;
+    width: auto !important;
+    height: 22px !important; /* 小巧的高度 */
+    padding: 0 8px !important; 
+    font-family: 'Times New Roman', 'Songti SC', SimSun, serif !important;
+    font-size: 11px !important; 
+    font-weight: normal !important;
+    letter-spacing: 1px !important;
+    display: flex !important; 
+    justify-content: center !important; 
+    align-items: center !important;
+}
+
+/* 暗黑模式反转颜色 */
+[data-theme="dark"] body.theme-magazine .top-btn,
+[data-theme="dark"] body.theme-magazine .tool-icon-btn,
+[data-theme="dark"] body.theme-magazine .action-btn,
+[data-theme="dark"] body.theme-magazine .send-btn { 
+    background: #eeeeee !important; color: #121212 !important; 
+}
+
+/* 注入文字代替图标 (顶栏) */
+body.theme-magazine #themeToggleBtn::after { content: "主题"; }
+body.theme-magazine button[title="群聊设置"]::after { content: "群聊"; }
+body.theme-magazine button[title="电话"]::after { content: "电话"; }
+body.theme-magazine button[title="自定义字卡"]::after { content: "字卡"; }
+body.theme-magazine button[title="设置"]::after { content: "设置"; }
+
+/* 注入文字代替图标 (底栏) */
+body.theme-magazine #batchModeBtn::after { content: "连发"; }
+body.theme-magazine button[title="发送图片"]::after { content: "图片"; }
+body.theme-magazine button[title="发送表情"]::after { content: "表情"; }
+
+/* 聊天气泡：极简线框，恢复全局字号控制！ */
+body.theme-magazine .bubble {
+    padding: 10px 14px !important;
+    font-weight: normal !important;
+    font-size: 1.05em !important; /* 🌟 恢复：跟随设置里的大小 */
+    line-height: 1.6 !important;
+}
+body.theme-magazine .yume .bubble::before, body.theme-magazine .yume .bubble::after,
+body.theme-magazine .user .bubble::before, body.theme-magazine .user .bubble::after { display: none !important; }
+body.theme-magazine .yume .bubble { background: var(--bg-color) !important; color: var(--border-color) !important; }
+body.theme-magazine .user .bubble { background: var(--bg-color) !important; color: var(--border-color) !important; }
+
+/* 底栏排版：功能键叠放在输入框上面 */
+body.theme-magazine .input-wrapper {
+    background: var(--bg-color) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 10px 15px 20px 15px !important;
+}
+body.theme-magazine .input-top-tag { display: none !important; }
+body.theme-magazine .input-area {
+    display: flex !important;
+    flex-direction: column !important; 
+    align-items: flex-start !important;
+    background: transparent !important; border: none !important; padding: 0 !important; gap: 8px !important; width: 100% !important;
+    position: relative !important;
+}
+body.theme-magazine .tool-btns {
+    order: 1 !important; /* 工具栏在最上面 */
+    width: 100% !important;
+    display: flex !important; gap: 6px !important; padding-left: 0 !important;
+}
+
+body.theme-magazine .input-box {
+    order: 2 !important; /* 输入框在中间 */
+    width: calc(100% - 55px) !important; /* 给右边SEND留出空间 */
+    border: 1px solid var(--border-color) !important;
+    padding: 2px 10px !important;
+}
+body.theme-magazine .main-input {
+    font-weight: normal !important;
+    font-size: 1.05em !important; /* 🌟 输入框也恢复随设置变化 */
+    padding: 6px 0 !important;
+}
+
+/* SEND 按钮绝对定位钉在右下角 */
+body.theme-magazine .send-btn {
+    position: absolute !important; 
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 48px !important; 
+    height: 31px !important; 
+    padding: 0 !important;
+}
+
+/* 解决暗黑模式下时间戳发白 */
+[data-theme="dark"] body.theme-magazine .timestamp-container { opacity: 0.6; }
+
+/* 彻底除掉右上角多出来的空方块 */
+body.theme-magazine button.wechat-more-btn,
+body.theme-magazine .top-btn.wechat-more-btn {
+    display: none !important;
+}
+
+/* ================= 右下角公告图标样式 ================= */
+.notice-icon-btn {
+    position: fixed;
+    right: 15px;
+    bottom: 120px; /* 放在输入框上方，不挡打字 */
+    width: 44px;
+    height: 44px;
+    background: var(--panel-bg);
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--border-color);
+    z-index: 85; 
+    color: var(--text-color);
+    transition: transform 0.1s;
+    animation: bounceNotice 2s infinite;
+}
+.notice-icon-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+.notice-icon-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.notice-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: #ff4444;
+    border: 2px solid var(--panel-bg);
+    border-radius: 50%;
+}
+@keyframes bounceNotice {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+    60% { transform: translateY(-4px); }
+}
+/* 暗黑模式下红点边框适配 */
+[data-theme="dark"] .notice-dot { border-color: var(--panel-bg); }
+
+/* ================= 交换日记专属 CSS ================= */
+.diary-tab-btn {
+    padding: 6px 20px;
+    font-weight: 900;
+    font-size: 0.95em;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: 0.1s;
+}
+.diary-tab-btn.active {
+    background: var(--text-color);
+    color: var(--bg-color);
+}
+
+.diary-book-card {
+    position: relative;
+    background: var(--panel-bg);
+    border: 3px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.diary-book-card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--border-color);
+}
+
+/* 文件夹左侧的立体黑色小书签 */
+.diary-book-card::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: -3px;
+    width: 6px;
+    height: 32px;
+    background: var(--text-color);
+    border: 3px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+}
+
+.diary-title {
+    font-size: 1.15em;
+    font-weight: 900;
+    color: var(--text-color);
+    border-bottom: 3px dashed var(--border-color);
+    padding-bottom: 8px;
+    padding-left: 10px; /* 避开书签条 */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+}
+.diary-status {
+    font-size: 0.85em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 900;
+    opacity: 0.9;
+    padding-left: 10px;
+}
+
+/* 到谁写了的标签提示 */
+.diary-turn-tag {
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-style: italic;
+    border: 2px solid var(--border-color);
+}
+.diary-turn-tag.wait {
+    background: var(--panel-bg);
+    color: var(--text-color);
+}
+
+/* ================= 交换日记详情条目 CSS ================= */
+.diary-entry-item {
+    background: var(--panel-bg);
+    border: 3px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 3px 3px 0 var(--border-color);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.diary-entry-item:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--border-color);
+}
+.diary-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed var(--border-color);
+    padding-bottom: 6px;
+}
+.diary-entry-author {
+    font-weight: 900;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.diary-entry-author::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--text-color);
+    border-radius: 50%;
+}
+.diary-entry-time {
+    font-size: 0.75em;
+    font-weight: bold;
+    opacity: 0.7;
+    font-style: italic;
+}
+.diary-entry-preview {
+    font-weight: 900;
+    font-size: 0.9em;
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ================= 催更/打卡分享卡片 细节多主题适配补充 ================= */
+
+/* 1. 微信主题 (WeChat) 专属 */
+body.theme-wechat .checkin-chat-card > div > div[style*="max-width:"] {
+    font-weight: 500 !important; /* 标题去黑粗，恢复原生粗细 */
+    font-size: 15px !important;
+}
+body.theme-wechat .checkin-chat-card svg {
+    stroke-width: 1.5 !important; /* 羽毛笔图标变纤细精美 */
+    opacity: 0.6;
+}
+/* 底部的催更名言/状态文字：去斜体，变灰色 */
+body.theme-wechat .checkin-chat-card div[style*="font-style:italic"] {
+    font-style: normal !important;
+    font-weight: normal !important;
+    color: #999999 !important;
+    font-size: 13px !important;
+    margin-top: 6px !important;
+}
+[data-theme="dark"] body.theme-wechat .checkin-chat-card div[style*="font-style:italic"] { color: #888888 !important; }
+
+
+/* 2. 苹果主题 (iMessage) 专属 */
+body.theme-imessage .checkin-chat-card > div > div[style*="max-width:"] {
+    font-weight: 600 !important;
+    font-size: 15px !important;
+}
+body.theme-imessage .checkin-chat-card svg {
+    stroke-width: 2 !important; 
+    color: #8e8e93 !important; /* 苹果经典灰图标 */
+}
+/* 底部的催更名言/状态文字：去斜体，变经典灰 */
+body.theme-imessage .checkin-chat-card div[style*="font-style:italic"] {
+    font-style: normal !important;
+    font-weight: 400 !important;
+    color: #8e8e93 !important;
+    font-size: 13px !important;
+    margin-top: 6px !important;
+}
+[data-theme="dark"] body.theme-imessage .checkin-chat-card div[style*="font-style:italic"] { color: #98989d !important; }
+
+
+/* 3. 杂志线框风 (Magazine) 专属 */
+body.theme-magazine .checkin-chat-card {
+    border-radius: 0 !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+}
+body.theme-magazine .checkin-chat-card span[style*="font-size:0.7em"] {
+    background: var(--text-color) !important;
+    color: var(--bg-color) !important;
+    border-radius: 0 !important;
+    font-family: 'Times New Roman', serif !important;
+    font-weight: normal !important;
+    letter-spacing: 1px !important;
+}
+body.theme-magazine .checkin-chat-card div[style*="font-style:italic"] {
+    font-family: 'Times New Roman', serif !important;
+    font-weight: normal !important;
+    letter-spacing: 1px !important;
+}
+
+/* ================= Warm Journal 温暖手账主题 (神仙创意排版版 - 完整防截断) ================= */
+body.theme-journal {
+    --bg-color: #fcf8f2 !important; 
+    --panel-bg: #ffffff !important;
+    --bubble-bg: #f5eedc !important; 
+    --border-color: #8b7355 !important; 
+    --text-color: #5c4a3d !important; 
+    --bg-pattern: repeating-linear-gradient(transparent, transparent 29px, rgba(139, 115, 85, 0.15) 29px, rgba(139, 115, 85, 0.15) 30px) !important; 
+    --btn-radius: 6px !important;
+}
+[data-theme="dark"] body.theme-journal {
+    --bg-color: #2a241f !important;
+    --panel-bg: #362e28 !important;
+    --bubble-bg: #453a32 !important;
+    --border-color: #8b7355 !important;
+    --text-color: #e6d5c3 !important;
+    --bg-pattern: repeating-linear-gradient(transparent, transparent 29px, rgba(230, 213, 195, 0.08) 29px, rgba(230, 213, 195, 0.08) 30px) !important;
+}
+
+/* 强制把手账主题下的字体改成楷体或衬线体，更有写字的感觉 */
+body.theme-journal * {
+    font-family: 'Kaiti', 'STKaiti', 'KaiTi_GB2312', serif !important;
+}
+
+/* --- 1. 顶栏全新解构：吊牌、荧光笔与胶带撕纸 --- */
+body.theme-journal .header { align-items: center !important; height: 75px !important; padding: 10px 15px !important; }
+
+/* 左侧按钮：带挂绳的牛皮纸小吊牌 */
+body.theme-journal #themeToggleBtn {
+    background: #ebdcc2 !important; border: 1px solid var(--border-color) !important; border-radius: 50% 50% 4px 4px !important; 
+    width: 32px !important; height: 38px !important; box-shadow: 2px 3px 5px rgba(0,0,0,0.15) !important;
+    transform: rotate(-10deg) !important; position: relative; margin-top: 10px !important;
+}
+[data-theme="dark"] body.theme-journal #themeToggleBtn { background: #453a32 !important; }
+body.theme-journal #themeToggleBtn::before {
+    content: ''; position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; 
+    border-radius: 50%; background: var(--bg-color); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3); z-index: 2;
+}
+body.theme-journal #themeToggleBtn::after {
+    content: ''; position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+    width: 1.5px; height: 30px; background: var(--border-color); opacity: 0.6;
+}
+
+/* 中间名字区：打破方框，变荧光笔高光与印章 */
+body.theme-journal .header-center-box {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    transform: none !important; padding: 0 !important; margin: 0 10px !important;
+    position: relative; overflow: visible !important; /* 彻底打破边界，允许印章盖到外面 */
+}
+body.theme-journal .header-title, body.theme-journal .header-sub { 
+    overflow: visible !important; text-overflow: clip !important; white-space: normal !important; 
+}
+body.theme-journal .header-title {
+    font-size: 1.6em !important; font-weight: 900 !important; letter-spacing: 2px !important; color: var(--text-color) !important;
+    background: linear-gradient(transparent 65%, rgba(240, 200, 100, 0.6) 65%, rgba(240, 200, 100, 0.6) 90%, transparent 90%) !important;
+    padding: 0 5px !important; display: inline-block; transform: rotate(-3deg);
+}
+[data-theme="dark"] body.theme-journal .header-title { background: linear-gradient(transparent 65%, rgba(200, 150, 50, 0.4) 65%, rgba(200, 150, 50, 0.4) 90%, transparent 90%) !important; }
+/* 在线状态：红色复古椭圆邮戳印章 (修复遮挡版) */
+body.theme-journal .header-sub {
+    position: absolute !important; right: -15px !important; bottom: 2px !important;
+    background: transparent !important; color: #cc4d4d !important;
+    border: 1.5px solid #cc4d4d !important; border-top: 1.5px solid #cc4d4d !important; border-radius: 40% !important; 
+    padding: 1px 5px !important; font-size: 0.55em !important; font-weight: 900 !important;
+    letter-spacing: 0 !important; transform: rotate(18deg) !important; opacity: 0.85; z-index: 10;
+}
+
+/* 右侧按钮：胶带贴着的撕纸碎片 */
+body.theme-journal .header-actions { flex-wrap: nowrap !important; gap: 6px !important; }
+body.theme-journal .top-btn:not(#themeToggleBtn) {
+    background: #fffdf8 !important; border: none !important; border-radius: 0 !important; box-shadow: 2px 3px 5px rgba(0,0,0,0.1) !important;
+    width: 32px !important; height: 34px !important; margin: 0 !important; position: relative; clip-path: polygon(0% 0%, 100% 4%, 95% 100%, 4% 96%) !important; 
+}
+[data-theme="dark"] body.theme-journal .top-btn:not(#themeToggleBtn) { background: #3d342d !important; }
+body.theme-journal .top-btn:not(#themeToggleBtn)::after {
+    content: ''; position: absolute; top: -2px; left: 50%; transform: translateX(-50%) rotate(-5deg); width: 22px; height: 8px; background: rgba(220, 210, 190, 0.7); z-index: 10;
+}
+body.theme-journal .top-btn:nth-child(1) { transform: translateY(4px) rotate(4deg) !important; }
+body.theme-journal .top-btn:nth-child(2) { transform: translateY(-2px) rotate(-6deg) !important; clip-path: polygon(2% 4%, 98% 0%, 100% 98%, 0% 100%) !important;}
+body.theme-journal .top-btn:nth-child(3) { transform: translateY(3px) rotate(5deg) !important; }
+body.theme-journal .top-btn:nth-child(4) { transform: translateY(-4px) rotate(-3deg) !important; clip-path: polygon(0% 2%, 100% 5%, 96% 98%, 3% 96%) !important;}
+
+
+/* --- 2. 底栏：纯正的横格便签 + 独立图钉 + 火漆印发送键 --- */
+body.theme-journal .input-wrapper { background: #ebdcc2 !important; border-top: 1px solid var(--border-color) !important; box-shadow: 0 -4px 10px rgba(0,0,0,0.03) !important; padding: 25px 15px 35px 15px !important; position: relative; }
+[data-theme="dark"] body.theme-journal .input-wrapper { background: #3d342d !important; }
+body.theme-journal .input-wrapper::before { content: ''; position: absolute; top: -5px; left: 0; right: 0; height: 10px; background-image: radial-gradient(circle, var(--bg-color) 4px, transparent 5px); background-size: 15px 15px; background-position: top center; z-index: 10; }
+body.theme-journal .input-top-tag { background: #cc4d4d !important; color: #fff !important; border: none !important; border-radius: 2px !important; transform: rotate(-3deg) translateY(-15px) !important; box-shadow: 1px 2px 4px rgba(0,0,0,0.1) !important; letter-spacing: 2px !important; padding: 4px 12px !important; }
+body.theme-journal .input-area { position: relative !important; flex-direction: column !important; align-items: stretch !important; padding: 15px !important; background: #fffdf8 !important; background-image: repeating-linear-gradient(transparent, transparent 24px, rgba(139, 115, 85, 0.15) 24px, rgba(139, 115, 85, 0.15) 25px) !important; border: 1px solid var(--border-color) !important; border-radius: 2px !important; box-shadow: 3px 4px 6px rgba(139, 115, 85, 0.15) !important; }
+[data-theme="dark"] body.theme-journal .input-area { background: #362e28 !important; }
+body.theme-journal .input-area::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(2deg); width: 60px; height: 16px; background: rgba(220, 210, 190, 0.8); border: 1px dashed rgba(139, 115, 85, 0.3); box-shadow: 1px 1px 2px rgba(0,0,0,0.05); z-index: 2; }
+body.theme-journal .tool-btns { position: absolute !important; top: -18px !important; left: 10px !important; gap: 8px !important; }
+body.theme-journal .tool-icon-btn { width: 32px !important; height: 32px !important; background: #f5eedc !important; border: 1px solid var(--border-color) !important; box-shadow: 2px 2px 0 rgba(139,115,85,0.2) !important; border-radius: 50% !important; }
+body.theme-journal .input-box { border: none !important; padding: 0 !important; min-height: 40px !important; }
+body.theme-journal .main-input { line-height: 25px !important; font-size: 1.1em !important; padding: 0 !important; }
+body.theme-journal .send-btn { position: absolute !important; bottom: -15px !important; right: -5px !important; width: 55px !important; height: 55px !important; min-width: 55px !important; border-radius: 50% !important; background: #cc4d4d !important; color: #fff !important; border: 2px solid #853333 !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 3px 4px 6px rgba(139,115,85,0.4) !important; font-size: 11px !important; font-weight: 900 !important; letter-spacing: 1px !important; transform: rotate(-10deg) !important; padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important; font-style: normal !important; }
+[data-theme="dark"] body.theme-journal .send-btn { background: #992b2b !important; border-color: #5c1a1a !important; }
+
+
+/* --- 3. 大时间戳：半透明纸胶带！ --- */
+body.theme-journal .visual-date-divider { margin: 25px 0 !important; }
+body.theme-journal .v-time-box {
+    background: rgba(220, 210, 190, 0.65) !important; 
+    color: var(--text-color) !important;
+    border: 1px dashed var(--border-color) !important;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.05) !important;
+    padding: 6px 20px !important;
+    transform: rotate(-1.5deg) !important; /* 像随手贴上去的胶带 */
+    border-radius: 2px !important; opacity: 0.9 !important;
+    font-style: normal !important; gap: 12px !important;
+}
+[data-theme="dark"] body.theme-journal .v-time-box { background: rgba(80, 70, 60, 0.65) !important; color: #e6d5c3 !important; border-color: rgba(230, 213, 195, 0.3) !important; }
+body.theme-journal .v-time { font-size: 1.4em !important; font-weight: 900 !important; }
+body.theme-journal .v-date { font-size: 0.85em !important; opacity: 0.8 !important; }
+
+
+/* --- 4. 悬浮球 & 应用面板：蜡封与纸板清单 --- */
+body.theme-journal .floating-ball {
+    background: #cc4d4d !important; color: #fff !important;
+    border: 2px solid #853333 !important; border-radius: 50% !important;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 2px 3px 5px rgba(139, 115, 85, 0.3) !important;
+    opacity: 0.9 !important;
+}
+[data-theme="dark"] body.theme-journal .floating-ball { background: #992b2b !important; border-color: #5c1a1a !important; }
+
+body.theme-journal .app-panel {
+    background: #fffdf8 !important; border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important; box-shadow: 4px 5px 10px rgba(139, 115, 85, 0.15) !important;
+}
+[data-theme="dark"] body.theme-journal .app-panel { background: #362e28 !important; }
+body.theme-journal .app-panel-header {
+    background: #ebdcc2 !important; color: var(--text-color) !important;
+    border-bottom: 1px dashed var(--border-color) !important;
+    font-weight: 900 !important; letter-spacing: 2px !important; font-style: normal !important;
+}
+[data-theme="dark"] body.theme-journal .app-panel-header { background: #453a32 !important; color: #e6d5c3 !important;}
+body.theme-journal .app-icon {
+    background: #f5eedc !important; border: 1px solid var(--border-color) !important;
+    border-radius: 50% !important; /* 图标全变圆形小贴纸 */
+    box-shadow: 2px 2px 0 rgba(139, 115, 85, 0.15) !important;
+}
+[data-theme="dark"] body.theme-journal .app-icon { background: #453a32 !important; }
+
+
+/* --- 5. 侧边栏 (抽屉)：书签标签卡 --- */
+body.theme-journal .side-toolbar-content {
+    background: #fcf8f2 !important; border: 1px solid var(--border-color) !important; border-left: none !important;
+    box-shadow: 3px 4px 6px rgba(139, 115, 85, 0.15) !important; border-radius: 0 4px 4px 0 !important;
+}
+[data-theme="dark"] body.theme-journal .side-toolbar-content { background: #362e28 !important; }
+body.theme-journal .side-toolbar-btn {
+    background: #f5eedc !important; border: 1px dashed var(--border-color) !important;
+    border-radius: 50% !important; box-shadow: 1px 2px 0 rgba(139, 115, 85, 0.15) !important;
+}
+[data-theme="dark"] body.theme-journal .side-toolbar-btn { background: #453a32 !important; }
+body.theme-journal .side-toolbar-handle {
+    background: var(--border-color) !important; color: #fcf8f2 !important;
+    border: 1px solid var(--border-color) !important; border-left: none !important; border-radius: 0 4px 4px 0 !important;
+}
+
+
+/* --- 6. 聊天气泡与其他卡片手账化 --- */
+body.theme-journal .bubble { border: 1px solid var(--border-color) !important; box-shadow: 2px 3px 0 rgba(139, 115, 85, 0.15) !important; }
+body.theme-journal .yume .bubble { border-radius: 2px 16px 16px 16px !important; }
+body.theme-journal .user .bubble { border-radius: 16px 2px 16px 16px !important; }
+body.theme-journal .yume .bubble::before, body.theme-journal .yume .bubble::after, body.theme-journal .user .bubble::before, body.theme-journal .user .bubble::after { display: none !important; }
+
+/* 日记催更卡片：纸胶带便签 + 红色印章 */
+body.theme-journal .checkin-chat-card { background: #fffcf5 !important; border: 1px solid rgba(139, 115, 85, 0.4) !important; border-radius: 2px !important; box-shadow: 2px 3px 5px rgba(0,0,0,0.06), inset 0 0 15px rgba(139,115,85,0.03) !important; position: relative; padding: 15px 12px !important; transform: rotate(1deg) !important; color: var(--text-color) !important; }
+[data-theme="dark"] body.theme-journal .checkin-chat-card { background: #3d342d !important; }
+body.theme-journal .checkin-chat-card::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(-3deg); width: 60px; height: 16px; background: rgba(220, 210, 190, 0.8); border: 1px dashed rgba(139, 115, 85, 0.2); box-shadow: 1px 2px 3px rgba(0,0,0,0.05); z-index: 2; }
+body.theme-journal .checkin-chat-card .checkin-avatar { border-color: var(--border-color) !important; border-radius: 4px !important; }
+body.theme-journal .checkin-chat-card .checkin-progress-bar { border: 1px solid var(--border-color) !important; background: transparent !important; }
+body.theme-journal .checkin-chat-card .checkin-progress-fill { background: var(--border-color) !important; }
+body.theme-journal .checkin-chat-card span[style*="font-size:0.7em"] { background: transparent !important; color: #cc4d4d !important; border: 2px solid #cc4d4d !important; border-radius: 4px !important; padding: 0 4px !important; transform: rotate(-5deg); display: inline-block; opacity: 0.8; }
+body.theme-journal .checkin-chat-card div[style*="font-style:italic"] { font-size: 0.95em !important; opacity: 0.9 !important; margin-top: 10px !important; padding-top: 8px !important; border-top: 1px dashed rgba(139, 115, 85, 0.3) !important; text-align: center; }
+
+/* 红包卡片 (复古信封) */
+body.theme-journal .red-packet-card { background: #e8dbcb !important; border: 2px dashed var(--border-color) !important; border-radius: 4px !important; box-shadow: 3px 3px 0 rgba(139, 115, 85, 0.15) !important; width: 220px !important; }
+[data-theme="dark"] body.theme-journal .red-packet-card { background: #3d342d !important; }
+body.theme-journal .rp-top { background: transparent !important; border-bottom: 2px dashed var(--border-color) !important; }
+body.theme-journal .rp-icon { background: var(--bg-color) !important; color: var(--text-color) !important; border: 2px solid var(--border-color) !important; border-radius: 50% !important; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05) !important;}
+body.theme-journal .rp-content { color: var(--text-color) !important; }
+body.theme-journal .rp-bottom { background: rgba(255,255,255,0.4) !important; color: var(--text-color) !important; font-style: italic !important; }
+[data-theme="dark"] body.theme-journal .rp-bottom { background: rgba(0,0,0,0.2) !important; }
+
+/* 音乐卡片 (歪斜拍立得相纸) */
+body.theme-journal .music-chat-card { background: #ffffff !important; border: 1px solid var(--border-color) !important; border-radius: 2px !important; padding: 10px 10px 20px 10px !important; box-shadow: 3px 4px 6px rgba(0,0,0,0.08) !important; transform: rotate(1.5deg) !important; width: 230px !important; }
+[data-theme="dark"] body.theme-journal .music-chat-card { background: #2a241f !important; }
+body.theme-journal .music-chat-card .mc-cover { border: 1px solid var(--border-color) !important; border-radius: 2px !important; }
+body.theme-journal .music-chat-card .mc-title { color: var(--text-color) !important; }
+body.theme-journal .music-chat-card .mc-singer { color: var(--text-color) !important; opacity: 0.8 !important; }
+body.theme-journal .music-chat-card .mc-play-btn { border: 2px dashed var(--border-color) !important; background: var(--bg-color) !important; color: var(--text-color) !important; border-radius: 50% !important; box-shadow:none !important;}
+
+/* 随机念头卡片 (撕纸便签纸) */
+body.theme-journal .sudden-thought-card { background: #f5eedc !important; border: none !important; border-radius: 0 !important; box-shadow: 2px 3px 5px rgba(0,0,0,0.08) !important; clip-path: polygon(0% 2%, 100% 0%, 98% 98%, 1% 100%) !important; }
+[data-theme="dark"] body.theme-journal .sudden-thought-card { background: #3d342d !important; }
+body.theme-journal .sudden-thought-card .event-card-top { border-bottom: 2px dotted var(--border-color) !important; color: var(--text-color) !important; }
+
+/* 顶部悬浮歌词条 (半透明纸胶带) */
+body.theme-journal #musicLyricBar { background: rgba(245, 238, 220, 0.85) !important; border: 2px dashed var(--border-color) !important; box-shadow: 2px 2px 0 rgba(139, 115, 85, 0.15) !important; border-radius: 2px !important; color: var(--text-color) !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+[data-theme="dark"] body.theme-journal #musicLyricBar { background: rgba(61, 52, 45, 0.85) !important; }
+
+/* 系统提示消息 (手写墨水感) */
+body.theme-journal .system-msg-content { background: transparent !important; color: var(--text-color) !important; border: none !important; box-shadow: none !important; opacity: 0.7 !important; }
+
+/* ========================================================= */
+/* ======= 全主题深度适配补丁：正在输入 / 电话 / 独立图片 ======= */
+/* ========================================================= */
+
+/* ---------------- 1. 微信主题 (WeChat) ---------------- */
+/* 正在输入：变成白底/黑底小圆角框，去掉漫画风边框 */
+body.theme-wechat .typing-indicator {
+    border: none !important; box-shadow: none !important; border-radius: 4px !important;
+    background: var(--bubble-bg) !important; padding: 10px 14px !important; margin: 10px 12px !important;
+}
+body.theme-wechat .typing-avatar { border-radius: 4px !important; border: none !important; width: 36px !important; height: 36px !important; }
+/* 电话：极简黑底，方形圆角头像，红绿扁平按钮 */
+body.theme-wechat .phone-modal { background: #2c2c2c !important; color: #fff !important; }
+body.theme-wechat .phone-avatar-container { border: none !important; border-radius: 8px !important; box-shadow: none !important; background-color: #3c3c3c !important;}
+body.theme-wechat .phone-btn { background: #333 !important; border: none !important; box-shadow: none !important; color: #fff !important; }
+body.theme-wechat .phone-btn.hangup { background: #fa5151 !important; color: #fff !important; }
+body.theme-wechat .phone-pulse { animation: none !important; }
+/* 单独图片/表情：无边框无内边距小圆角 */
+body.theme-wechat .chat-image { border: none !important; box-shadow: none !important; padding: 0 !important; border-radius: 4px !important; }
+
+/* ---------------- 2. 苹果主题 (iMessage) ---------------- */
+/* 正在输入：纯粹的苹果灰点点框，隐藏头像 */
+body.theme-imessage .typing-indicator {
+    border: none !important; box-shadow: none !important; border-radius: 20px !important;
+    background: var(--bubble-bg) !important; padding: 10px 16px !important; margin-left: 10px !important;
+}
+body.theme-imessage .typing-avatar, body.theme-imessage .typing-name { display: none !important; }
+/* 电话：毛玻璃全屏，超大头像圆，半透明按钮 */
+body.theme-imessage .phone-modal { background: rgba(0,0,0,0.85) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: #fff !important; }
+body.theme-imessage .phone-avatar-container { border: none !important; box-shadow: none !important; width: 120px !important; height: 120px !important; }
+body.theme-imessage .phone-btn { background: rgba(255,255,255,0.2) !important; border: none !important; box-shadow: none !important; color: #fff !important; backdrop-filter: blur(10px); }
+body.theme-imessage .phone-btn.hangup { background: #ff3b30 !important; }
+/* 单独图片/表情：大圆角，无边框 */
+body.theme-imessage .chat-image { border: none !important; box-shadow: none !important; padding: 0 !important; border-radius: 16px !important; }
+
+/* ---------------- 3. 果冻少女粉 (Sweet Pink) ---------------- */
+/* 正在输入：半透发光，无黑边 */
+body.theme-pink .typing-indicator {
+    border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 4px 6px rgba(255,255,255,0.8), 0 4px 12px rgba(255, 180, 195, 0.25) !important;
+    border-radius: 22px !important; border-bottom-left-radius: 6px !important;
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,228,232,0.6)) !important;
+}
+[data-theme="dark"] body.theme-pink .typing-indicator { background: linear-gradient(135deg, rgba(71,42,51,0.8), rgba(56,34,41,0.6)) !important; box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.3) !important; border-color: rgba(255, 180, 200, 0.15) !important; }
+body.theme-pink .typing-avatar { border: 1.5px solid rgba(255,255,255,0.8) !important; box-shadow: 0 2px 6px rgba(255,180,195,0.3) !important; }
+/* 电话：梦幻渐变全屏，按钮发光 */
+body.theme-pink .phone-modal { background: linear-gradient(135deg, #fff0f3, #ffe4e8) !important; }
+[data-theme="dark"] body.theme-pink .phone-modal { background: linear-gradient(135deg, #2b1a1f, #3a2228) !important; }
+body.theme-pink .phone-avatar-container { border-color: rgba(255,255,255,0.8) !important; box-shadow: 0 8px 24px rgba(255, 180, 195, 0.4) !important; }
+body.theme-pink .phone-btn { border-color: rgba(255,255,255,0.8) !important; box-shadow: 0 4px 10px rgba(255,180,195,0.3) !important; }
+/* 单独图片/表情：圆角带粉色柔光 */
+body.theme-pink .chat-image { border: 2px solid rgba(255,255,255,0.6) !important; box-shadow: 0 4px 12px rgba(255,180,195,0.3) !important; border-radius: 16px !important; padding: 2px !important; }
+
+/* ---------------- 4. 毛玻璃全透 (Aero Glass) ---------------- */
+/* 正在输入：高级透视 */
+body.theme-glass .typing-indicator {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}
+[data-theme="dark"] body.theme-glass .typing-indicator { background: rgba(50, 50, 50, 0.6) !important; border-color: rgba(255,255,255,0.1) !important;}
+body.theme-glass .typing-avatar { border: 1.5px solid rgba(255,255,255,0.5) !important; }
+/* 电话：毛玻璃按钮与边框 */
+body.theme-glass .phone-avatar-container { border: 1.5px solid rgba(255,255,255,0.5) !important; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;}
+body.theme-glass .phone-btn { border: 1.5px solid rgba(255,255,255,0.5) !important; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important; background: rgba(255,255,255,0.2) !important; }
+/* 单独图片/表情：细白框 */
+body.theme-glass .chat-image { border: 1.5px solid rgba(255,255,255,0.5) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important; border-radius: 12px !important; padding: 0 !important; }
+
+/* ---------------- 5. 极简杂志 (Magazine) ---------------- */
+/* 正在输入：纯净直角黑框 */
+body.theme-magazine .typing-indicator {
+    border: 1px solid var(--border-color) !important; border-radius: 0 !important;
+    box-shadow: none !important; background: var(--bg-color) !important;
+}
+body.theme-magazine .typing-avatar { border: 1px solid var(--border-color) !important; border-radius: 0 !important; }
+/* 电话：纯线条构成，无圆角 */
+body.theme-magazine .phone-avatar-container { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+body.theme-magazine .phone-btn { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; background: var(--bg-color) !important; color: var(--text-color) !important; }
+body.theme-magazine .phone-btn.hangup { background: var(--text-color) !important; color: var(--bg-color) !important; }
+/* 单独图片/表情：零内距，一根细线 */
+body.theme-magazine .chat-image { border: 1px solid var(--border-color) !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
+
+/* ---------------- 6. 温暖手账 (Journal) ---------------- */
+/* 正在输入：柔和纸张，胶带贴合 */
+body.theme-journal .typing-indicator {
+    background: #fdfaf6 !important; border: 1px solid var(--border-color) !important;
+    border-radius: 2px 16px 16px 16px !important; box-shadow: 2px 3px 0 rgba(139, 115, 85, 0.15) !important;
+}
+[data-theme="dark"] body.theme-journal .typing-indicator { background: #453a32 !important; }
+body.theme-journal .typing-avatar { border: 1px solid var(--border-color) !important; }
+/* 电话：拍立得相纸风，按钮像印章 */
+body.theme-journal .phone-avatar-container { background-color: #fff !important; border: 1px solid var(--border-color) !important; border-radius: 2px !important; box-shadow: 3px 4px 6px rgba(0,0,0,0.1) !important; padding: 10px 10px 25px 10px !important; width: auto !important; height: auto !important; min-width: 140px; min-height: 155px; }
+body.theme-journal .phone-btn { border: 2px dashed var(--border-color) !important; box-shadow: 2px 3px 0 rgba(139,115,85,0.15) !important; background: var(--panel-bg) !important;}
+/* 单独图片/表情：歪斜拍立得照片效果 */
+body.theme-journal .chat-image { background: #fff !important; border: 1px solid var(--border-color) !important; border-radius: 2px !important; box-shadow: 2px 3px 5px rgba(0,0,0,0.1) !important; padding: 6px 6px 16px 6px !important; transform: rotate(-1.5deg); }
+[data-theme="dark"] body.theme-journal .chat-image { background: #3d342d !important; }
+
+/* ========================================================= */
+/* ======= 终极修复：电话头像变白、挂断键消失、悬浮小窗适配 ======= */
+/* ========================================================= */
+
+/* ---------------- 1. 微信主题 (WeChat) ---------------- */
+body.theme-wechat .phone-avatar-container { background-color: #3c3c3c !important; background-image: inherit; }
+body.theme-wechat .phone-btn.hangup { background-color: #fa5151 !important; color: #fff !important; }
+/* 小窗适配 */
+body.theme-wechat .minimized-phone { background: #fff !important; border: none !important; border-radius: 8px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; animation: none !important;}
+[data-theme="dark"] body.theme-wechat .minimized-phone { background: #2c2c2c !important; }
+body.theme-wechat .minimized-phone::before { display: none !important; }
+body.theme-wechat .mini-phone-icon { background: #07c160 !important; color: #fff !important; border: none !important; border-radius: 6px !important; animation: none !important;}
+[data-theme="dark"] body.theme-wechat .mini-phone-icon { background: #2bba00 !important; }
+body.theme-wechat .mini-phone-time { font-family: inherit !important; font-weight: normal !important; }
+
+/* ---------------- 2. 苹果主题 (iMessage) ---------------- */
+body.theme-imessage .phone-avatar-container { background-color: transparent !important; }
+body.theme-imessage .phone-btn.hangup { background-color: #ff3b30 !important; color: #fff !important;}
+/* 小窗适配 */
+body.theme-imessage .minimized-phone { background: rgba(255,255,255,0.7) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: none !important; border-radius: 20px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important; }
+[data-theme="dark"] body.theme-imessage .minimized-phone { background: rgba(0,0,0,0.7) !important; }
+body.theme-imessage .minimized-phone::before { display: none !important; }
+body.theme-imessage .mini-phone-icon { background: #34c759 !important; color: #fff !important; border-radius: 50% !important; border: none !important; animation: none !important;}
+body.theme-imessage .mini-phone-time { font-weight: 500 !important; font-family: inherit !important; }
+
+/* ---------------- 3. 果冻少女粉 (Sweet Pink) ---------------- */
+body.theme-pink .phone-avatar-container { background-color: rgba(255,255,255,0.5) !important; }
+body.theme-pink .phone-btn.hangup { background-color: #ff7597 !important; color: #fff !important; border-color: rgba(255,255,255,0.8) !important;}
+/* 小窗适配 */
+body.theme-pink .minimized-phone { background: rgba(255, 255, 255, 0.6) !important; border: 1.5px solid rgba(255,255,255,0.8) !important; border-radius: 24px !important; backdrop-filter: blur(12px); box-shadow: 0 4px 15px rgba(255,180,195,0.3) !important; }
+[data-theme="dark"] body.theme-pink .minimized-phone { background: rgba(43,26,31,0.6) !important; border-color: rgba(255,180,200,0.15) !important;}
+body.theme-pink .minimized-phone::before { border-color: rgba(255,180,195,0.4) !important; border-radius: 20px !important; }
+body.theme-pink .mini-phone-icon { background: linear-gradient(135deg, #ff9eb5, #ff7597) !important; color: #fff !important; border: none !important; border-radius: 50% !important; }
+
+/* ---------------- 4. 毛玻璃全透 (Aero Glass) ---------------- */
+body.theme-glass .phone-avatar-container { background-color: rgba(255,255,255,0.1) !important; }
+body.theme-glass .phone-btn.hangup { background-color: rgba(255,68,68,0.8) !important; color: #fff !important;}
+/* 小窗适配 */
+body.theme-glass .minimized-phone { background: rgba(255, 255, 255, 0.25) !important; border: 1.5px solid rgba(255,255,255,0.5) !important; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-radius: 16px !important; box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important; }
+[data-theme="dark"] body.theme-glass .minimized-phone { background: rgba(0,0,0,0.3) !important; border-color: rgba(255,255,255,0.1) !important; }
+body.theme-glass .minimized-phone::before { border-color: rgba(255,255,255,0.3) !important; }
+body.theme-glass .mini-phone-icon { background: rgba(255,255,255,0.3) !important; color: var(--text-color) !important; border: 1.5px solid rgba(255,255,255,0.5) !important; }
+
+/* ---------------- 5. 极简杂志 (Magazine) ---------------- */
+body.theme-magazine .phone-avatar-container { background-color: var(--panel-bg) !important; }
+body.theme-magazine .phone-btn.hangup { background-color: var(--text-color) !important; color: var(--bg-color) !important; }
+/* 小窗适配 */
+body.theme-magazine .minimized-phone { background: var(--bg-color) !important; border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; animation: none !important;}
+body.theme-magazine .minimized-phone::before { display: none !important; }
+body.theme-magazine .mini-phone-icon { background: var(--border-color) !important; color: var(--bg-color) !important; border-radius: 0 !important; animation: none !important;}
+body.theme-magazine .mini-phone-time { font-family: 'Times New Roman', serif !important; font-weight: normal !important; letter-spacing: 2px !important;}
+
+/* ---------------- 6. 温暖手账 (Journal) ---------------- */
+/* 这里修复了头像变白和挂断键消失的问题 */
+body.theme-journal .phone-avatar-container { background-color: #fff !important; }
+body.theme-journal .phone-btn { color: var(--text-color) !important; }
+body.theme-journal .phone-btn.hangup { background-color: #cc4d4d !important; color: #fff !important; border-color: #853333 !important; }
+body.theme-journal #phoneAnswerBtn { background-color: #5c9966 !important; color: #fff !important; border-color: #3b6643 !important; }
+/* 小窗适配：像一张纸胶带贴在右上角 */
+body.theme-journal .minimized-phone { background: #fdfaf6 !important; border: 1px solid var(--border-color) !important; border-radius: 4px !important; box-shadow: 3px 4px 6px rgba(139, 115, 85, 0.15) !important; transform: rotate(-2deg); }
+[data-theme="dark"] body.theme-journal .minimized-phone { background: #3d342d !important; }
+body.theme-journal .minimized-phone::before { border: 1px dashed var(--border-color) !important; opacity: 0.4 !important;}
+body.theme-journal .mini-phone-icon { background: #cc4d4d !important; color: #fff !important; border: 1px solid #853333 !important; border-radius: 50% !important; box-shadow: 1px 2px 0 rgba(0,0,0,0.1) !important; }
+[data-theme="dark"] body.theme-journal .mini-phone-icon { background: #992b2b !important; border-color: #5c1a1a !important;}
+
+/* ================= 记忆时光机专属花样样式 ================= */
+.search-result-card {
+    background: var(--panel-bg);
+    border: 3px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 4px 4px 0 var(--border-color);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+    /* 修复手机内核高度塌陷，文字显形 */
+    display: flex;
+    flex-direction: column;
+}
+.search-result-card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--border-color);
+}
+/* 卡片左侧装饰条 */
+.search-result-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    background: var(--text-color);
+    opacity: 0.8;
+    border-radius: 4px 0 0 4px; /* 补上圆角 */
+}
+/* 关键词高亮 (反转颜色+加粗斜体) */
+.search-highlight {
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding: 0 4px;
+    border-radius: 4px;
+    font-style: italic;
+    font-weight: 900;
+}
+/* 时光回溯的上下文框 (像一截老胶卷) */
+.search-context-box {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px dashed var(--border-color);
+    font-size: 0.85em;
+    display: none; /* 默认折叠隐藏 */
+    flex-direction: column;
+    gap: 6px;
+    background: var(--bg-color);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+/* ================= 记忆时光机 各大主题深度适配 ================= */
+
+/* 1. WeChat 经典微信主题 */
+body.theme-wechat .search-result-card {
+    background: #ffffff; border: none; border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,0.05); transform: none;
+}
+body.theme-wechat .search-result-card::before { background: #07c160; width: 4px; border-radius: 4px 0 0 4px; }
+body.theme-wechat .search-highlight { background: rgba(7, 193, 96, 0.15); color: #07c160; font-style: normal; font-weight: bold; border-radius: 2px; }
+body.theme-wechat .search-context-box { background: #f5f5f5; border: none; border-radius: 4px; margin-top: 12px; }
+[data-theme="dark"] body.theme-wechat .search-result-card { background: #2c2c2c; box-shadow: 0 0 0 1px rgba(255,255,255,0.05); }
+[data-theme="dark"] body.theme-wechat .search-result-card::before { background: #2bba00; }
+[data-theme="dark"] body.theme-wechat .search-highlight { background: rgba(43, 186, 0, 0.2); color: #2bba00; }
+[data-theme="dark"] body.theme-wechat .search-context-box { background: #1f1f1f; }
+
+/* 2. iMessage 苹果短信主题 */
+body.theme-imessage .search-result-card {
+    background: #f2f2f6; border: 1px solid #e5e5ea; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transform: none;
+}
+body.theme-imessage .search-result-card::before { background: #0b84ff; width: 4px; border-radius: 8px 0 0 8px; }
+body.theme-imessage .search-highlight { background: #0b84ff; color: #fff; font-style: normal; font-weight: 600; border-radius: 6px; padding: 2px 6px; }
+body.theme-imessage .search-context-box { background: #ffffff; border: 1px solid #e5e5ea; border-radius: 12px; }
+[data-theme="dark"] body.theme-imessage .search-result-card { background: #1c1c1e; border-color: #38383a; }
+[data-theme="dark"] body.theme-imessage .search-highlight { background: #0b84ff; color: #fff; }
+[data-theme="dark"] body.theme-imessage .search-context-box { background: #2c2c2e; border-color: #38383a; }
+
+/* 3. Sweet Pink 果冻少女粉主题 */
+body.theme-pink .search-result-card {
+    background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 255, 255, 0.8); border-radius: 20px; box-shadow: inset 0 4px 6px rgba(255,255,255,0.7), 0 6px 12px rgba(255, 180, 195, 0.2);
+}
+body.theme-pink .search-result-card::before { background: linear-gradient(to bottom, #ff9eb5, #ff7597); width: 6px; border-radius: 20px 0 0 20px; }
+body.theme-pink .search-highlight { background: linear-gradient(135deg, #ff9eb5, #ff7597); color: #fff; border-radius: 6px; box-shadow: 0 2px 4px rgba(255, 117, 151, 0.3); font-style: normal;}
+body.theme-pink .search-context-box { background: rgba(255, 255, 255, 0.4); border: 1.5px solid rgba(255, 255, 255, 0.6); border-radius: 16px; }
+[data-theme="dark"] body.theme-pink .search-result-card { background: rgba(80, 40, 50, 0.5); border-color: rgba(255, 180, 200, 0.15); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+[data-theme="dark"] body.theme-pink .search-context-box { background: rgba(0, 0, 0, 0.2); border-color: rgba(255, 180, 200, 0.15); }
+
+/* 4. Aero Glass 全透毛玻璃主题 */
+body.theme-glass .search-result-card {
+    background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(255, 255, 255, 0.5); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); transform: none;
+}
+body.theme-glass .search-result-card::before { background: var(--text-color); width: 4px; border-radius: 8px 0 0 8px; }
+body.theme-glass .search-highlight { background: var(--text-color); color: var(--bg-color); border-radius: 4px; font-style: normal; }
+body.theme-glass .search-context-box { background: rgba(255, 255, 255, 0.1); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 12px; }
+[data-theme="dark"] body.theme-glass .search-result-card { background: rgba(30, 41, 59, 0.3); border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3);}
+[data-theme="dark"] body.theme-glass .search-context-box { background: rgba(0, 0, 0, 0.2); border-color: rgba(255, 255, 255, 0.1); }
+
+/* 5. Magazine 极简杂志线框主题 */
+body.theme-magazine .search-result-card {
+    background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 0; box-shadow: none; transform: none;
+}
+body.theme-magazine .search-result-card::before { width: 0; } /* 取消左侧色条 */
+body.theme-magazine .search-result-card::after { content:'MEMORY'; position:absolute; top:8px; right:8px; font-size:9px; font-family:'Times New Roman', serif; border:1px solid var(--border-color); padding:2px 4px; }
+body.theme-magazine .search-highlight { background: var(--text-color); color: var(--bg-color); font-family: 'Times New Roman', serif; border-radius: 0; padding: 0 4px; font-style: normal; }
+body.theme-magazine .search-context-box { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 0; border-top-style: solid; margin-top: 15px;}
+
+/* 6. Warm Journal 温暖手账主题 */
+body.theme-journal .search-result-card {
+    background: #fffcf5; border: 1px solid rgba(139, 115, 85, 0.4); border-radius: 2px;
+    box-shadow: 2px 3px 5px rgba(0,0,0,0.06), inset 0 0 15px rgba(139,115,85,0.03); transform: rotate(0.5deg);
+}
+body.theme-journal .search-result-card:active { transform: rotate(0deg) translate(1px, 1px); box-shadow: none; }
+body.theme-journal .search-result-card::before {
+    background: rgba(220, 210, 190, 0.8); border-right: 1px dashed rgba(139, 115, 85, 0.3); width: 8px; border-radius: 0;
+}
+/* 神仙细节：手账主题高亮模拟真实的荧光笔划线 */
+body.theme-journal .search-highlight {
+    background: linear-gradient(transparent 50%, rgba(240, 200, 100, 0.5) 50%, rgba(240, 200, 100, 0.5) 90%, transparent 90%);
+    color: var(--text-color); font-style: normal; border-radius: 0; padding: 0 2px;
+}
+body.theme-journal .search-context-box { background: #fdfaf6; border: 1px dashed var(--border-color); border-radius: 4px; }
+[data-theme="dark"] body.theme-journal .search-result-card { background: #3d342d; }
+[data-theme="dark"] body.theme-journal .search-highlight { background: linear-gradient(transparent 50%, rgba(200, 150, 50, 0.4) 50%, rgba(200, 150, 50, 0.4) 90%, transparent 90%); }
+[data-theme="dark"] body.theme-journal .search-context-box { background: #362e28; }
